@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>게시판</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+  <!--아이콘용-->
+  <script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js" th:src="@{js/jquery-3.7.1.min.js}"></script>
+
+  <th:block th:replace="~{fragments/configure::configure}"></th:block>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap");
+
+    body {
+      font-family: "Noto Sans KR", sans-serif;
+      background-color: #f9fafb;
+    }
+
+    .icon-bg-yellow {
+      background-color: #ffc107;
+    }
+
+    .icon-bg-blue {
+      background-color: #ebf4ff;
+    }
+
+    .icon-text-blue {
+      color: #3182ce;
+    }
+
+    .icon-bg-orange {
+      background-color: #fef3c7;
+    }
+
+    .icon-text-orange {
+      color: #f6ad55;
+    }
+
+    .fixed-height-card {
+      min-height: 230px;
+      /* 설정된 최소 높이 */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- header -->
+  <th:block th:replace="~{fragments/header::headerFragment}"></th:block>
+
+  <section class="bg-white mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+
+	<h5 class="text-3xl font-bold text-gray-900 mb-10 ml-5">게시판</h5>
+
+    <div>
+
+      <!--tab  -->
+      <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
+          <li class="me-2" role="tab">
+            <button id="boardType0"
+              class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-500 hover:border-blue-500 focus:text-blue-500 focus:border-blue-500 dark:hover:text-gray-300"
+              aria-selected="false" onclick="cardAllAjax(1,0)">전체보기</button>
+          </li>
+          <li class="me-2" role="tab">
+            <button id="boardType1"
+              class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-500 hover:border-blue-500 focus:text-blue-500 focus:border-blue-500 dark:hover:text-gray-300"
+              aria-selected="false" onclick="cardAllAjax(1,1)">멘티모집</button>
+          </li>
+          <li class="me-2" role="tab">
+            <button id="boardType2"
+              class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-500 hover:border-blue-500 focus:text-blue-500 focus:border-blue-500 dark:hover:text-gray-300"
+              aria-selected="false" onclick="cardAllAjax(1,2)">멘토&맴버</button>
+          </li>
+          <li class="me-2" role="tab">
+            <button id="boardType3"
+              class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-500 hover:border-blue-500 focus:text-blue-500 focus:border-blue-500 dark:hover:text-gray-300"
+              aria-selected="false" onclick="cardAllAjax(1,3)">맴버 모집</button>
+          </li>
+        </ul>
+      </div>
+
+      <!--여기는 메인 네비바 기술스택~금액나오는공간-->
+      <div class="mx-auto max-w-7xl">
+        <div class="relative flex h-16 items-center justify-start">
+          <div class="container mx-auto mt-5">
+            <div class="flex justify-start items-center mb-4 mr-auto">
+
+              <!-- 가운데 정렬로 변경 -->
+              <div class="flex space-x-2">
+
+                <button id="dropdownStackButton" style="background-color: #59c3f3;" data-dropdown-toggle="dropdownStack"
+                  data-dropdown-placement="bottom" class="text-white hover:bg-blue-800 focus:ring-4 
+                    focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 
+                    dark:focus:ring-blue-800" type="button">기술스택<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m1 1 4 4 4-4" />
+                  </svg>
+                </button>
+
+                <button id="dropdownLocalButton" style="background-color: #59c3f3;" data-dropdown-toggle="dropdownLocal"
+                  data-dropdown-placement="bottom" class="text-white hover:bg-blue-800 focus:ring-4 
+                         focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700
+                          dark:focus:ring-blue-800" type="button">지역<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m1 1 4 4 4-4" />
+                  </svg>
+                </button>
+
+                <button id="dropdownOnOffButton" style="background-color: #59c3f3;" data-dropdown-toggle="dropdownOnOff"
+                  data-dropdown-placement="bottom" class="text-white hover:bg-blue-800 focus:ring-4
+                         focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 
+                         dark:focus:ring-blue-800" type="button">진행방식<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m1 1 4 4 4-4" />
+                  </svg>
+                </button>
+
+                <!-- 필터누르면 리셋되게 하자 -->
+                <button id="RegPrtypeReset" style="background-color: #59c3f3;" class="text-white hover:bg-blue-800 focus:ring-4
+                            focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 
+                            dark:focus:ring-blue-800" type="button">
+                  <svg class="w-6 h-6 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                    height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
+                  </svg>
+                </button>
+
+                <!-- Dropdown 스택 -->
+                <div id="dropdownStack" class="z-10 hidden bg-white rounded-lg shadow w-60 dark:bg-gray-700">
+                  <div class="p-3">
+                    <label for="input-group-search" class="sr-only">Search</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                      </div>
+                      <input type="text" id="dropdownStackSearch"
+                        class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="기술 스택 검색">
+                    </div>
+                  </div>
+                  <ul class="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200"
+                    aria-labelledby="dropdownStackButton">
+                    <li th:each="skill,iterStat : ${skillList}" name="skillCheckLi"
+                      th:data-skill-name="${skill.skill_name}">
+                      <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <input id="checkbox-item-11" th:onclick="skillCheck(this,[[${skill.skill_id}]])"
+                          th:data-skill-name="${skill.skill_name}" th:id="'skillCheck'+${iterStat.index}"
+                          name="skillCheck" type="checkbox" th:value="${skill.skill_id}" value=""
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                        <label th:for="'skillCheck'+${iterStat.index}" th:text="${skill.skill_name}"
+                          class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">Bonnie
+                          Green</label>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Dropdown 지역 -->
+                <div id="dropdownLocal"
+                  class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
+                  <ul class="h-48 px-3 pb-3 overflow-y-auto space-y-1 text-sm text-gray-700 dark:text-gray-200"
+                    aria-labelledby="dropdownLocalButton">
+                    <li th:each="region,iterStat : ${regionList}">
+                      <div class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <input th:id="'localRadio'+${iterStat.index}"
+                          th:onchange="selectRegion(this,[[${region.local_code}]],[[${region.local}]])" type="radio"
+                          th:value="${region.local_code}" name="local-radio"
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                        <label th:for="'localRadio'+${iterStat.index}" th:text="${region.local}"
+                          class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">Default
+                          radio</label>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Dropdown 진행방식 -->
+                <div id="dropdownOnOff"
+                  class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
+                  <ul class="p-3 space-y-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownOnOff">
+                    <li>
+                      <div class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <input id="default-radio-6" onchange="selectOnOff(this,'0')" type="radio" value=""
+                          name="OnOff-radio"
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                        <label for="default-radio-6"
+                          class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">온라인</label>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <input id="default-radio-7" onchange="selectOnOff(this,'1')" type="radio" value=""
+                          name="OnOff-radio"
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                        <label for="default-radio-7"
+                          class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">오프라인</label>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <input id="default-radio-8" onchange="selectOnOff(this,'2')" type="radio" value=""
+                          name="OnOff-radio"
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                        <label for="default-radio-8"
+                          class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">온/오프라인</label>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- 최신순 인기순 정렬하기  -->
+                <select name="cardSort" onchange="sortByOption(this.value, '${boardType}')"
+                  class="block appearance-none bg-white border border-gray-400 hover:border-gray-500 px-4 py-1 pr-6 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
+                  style="margin-right: 30px;">
+                  <option value="latest">최신순</option>
+                  <option value="popular">인기순</option>
+                </select>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="flex justify-center items-center mb-4 mr-auto">
+        <div id="selectedSkills" class="flex flex-wrap"></div>
+      </div>
+
+
+    </div>
+
+    <!-- 글 등록 -->
+    <div class="text-right">
+      <a href="/boardWirte" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">글 등록</a>
+    </div>
+
+    <!-- 여기에 내용이 동적으로 바뀝니다 -->
+    <div id="content">
+      <div class="grid grid-cols-3 gap-5">
+
+        <!--폼 통일된 카드-->
+        <div th:each="sk_card : ${sk_board}"
+          class="border-solid border border-slate-200 bg-white fixed-height-card p-5 mt-4 shadow-lg rounded-2xl">
+
+          <div class="w-auto">
+
+            <!-- 카드 유형 & 북마크 버튼 -->
+            <div class="flex justify-between items-center mb-4">
+              <!-- 카드 유형 -->
+              <div th:if="${sk_card.board_type} == 1"
+                class="bg-yellow-200 text-yellow-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                멘티모집
+              </div>
+              <div th:if="${sk_card.board_type} == 2"
+                class="bg-blue-200 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                멘토&맴버
+              </div>
+              <div th:if="${sk_card.board_type} == 3"
+                class="bg-green-200 text-green-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                맴버모집
+              </div>
+
+              <!-- 북마크 버튼 -->
+              <button th:onclick="bmkClick([[${sk_card.board_id}]],[[${session.userId}]])" id="button">
+                <i th:class="${sk_card.bookmarkYN} == 1 ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+              </button>
+            </div>
+
+            <a th:href="@{/cardDetailForm(board_id=${sk_card.board_id})}">
+              <!-- 1board.html에서 카드를 누르면 board_id를 가지고 이동 -->
+
+              <!-- 보드 아이디 -->
+              <!-- <div th:text="${sk_card.board_id}"></div> -->
+
+              <!-- D-day -->
+              <div th:text="${sk_card.d_day lt 0 ? '마감' : 'D-' + sk_card.d_day}" class="text-sm text-gray-500 mb-2">
+              </div>
+
+              <!-- 카드제목 가져오기 20글자 넘으면 잘라서 가져오자 -->
+              <h3
+                th:text="${#strings.length(sk_card.board_title) > 20 ? #strings.substring(sk_card.board_title, 0, 20) + '...' : sk_card.board_title}"
+                class="mb-3 text-lg font-bold"></h3>
+
+              <!-- 스킬 이미지 5개 -->
+              <div class="inline-flex flex-row gap-1 justify-center items-center mt-5 mb-5">
+                <div th:each="skillImgUrl, iterStat : ${sk_card.skillImgUrlList}">
+                  <img class="h-8 w-8 rounded-full" th:if="${iterStat.index < 5}" th:src="${skillImgUrl}" alt="" />
+                </div>
+              </div>
+
+              <!--금액 & 조회수-->
+              <div class="flex items-center justify-between space-x-1 mb-3">
+                <!--금액부분은 팀원모집만 안나오도록, 공백처리를 해주자-->
+                <h5 th:text="${sk_card.board_type} == '3' ? ' ' : ${sk_card.pr_price + '원'}"
+                  class="text-sm text-gray-500 font-bold"></h5>
+                <!-- 조회수 -->
+                <i class="mr-3 fas fa-eye text-sm text-gray-500 font-bold">
+                  [[${sk_card.board_view}]]</i>
+              </div>
+
+              <!-- 카드 작성자 & 별점 -->
+              <div class="flex justify-between items-center text-2xl border-t border-gray-200 pt-4">
+
+                <!-- 작성자 닉네임 -->
+                <div th:onclick="location.href='SelfIntroduction?user_id=[[${sk_card.user_id}]]';"  class="flex">
+                  <i class="ml-5 fas fa-user-circle fa-s mr-2" style="color: gray"></i>
+                  <h5 th:text="${sk_card.user_name}" class="text-sm text-gray-500 mr-10 font-bold"></h5>
+                </div>
+                <!-- 별점 -->
+                <div th:if="${sk_card.board_type == '1'}" class="flex items-center mr-5">
+                  <svg class="w-6 h-6 text-yellow-300 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor" viewBox="0 0 22 20">
+                    <path
+                      d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
+                  </svg>
+                  <p class="ms-2 text-sm font-bold text-gray-900 dark:text-white">
+                    [[${sk_card.avg_score}]]
+                  </p>
+                </div>
+
+              </div>
+            </a>
+
+          </div> <!--div class="w-auto"-->
+
+        </div> <!-- 카드전체 -->
+      </div> <!-- 그리드 -->
+
+      <!-- 페이징 -->
+      <nav th:if="${page.total > 0}" class="mt-5 flex justify-center" aria-label="Page navigation example">
+        <ul class="inline-flex -space-x-px text-base h-10">
+          <li>
+            <button th:unless="${page.currentPage} == 1"
+              th:onclick="cardAllAjax([[${page.currentPage-1}]],[[${boardType}]])" class="flex items-center justify-center px-4 h-10 ms-0 leading-tight 
+                       text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg 
+                       hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 
+                       dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</button>
+          </li>
+          <li th:each="i: ${#numbers.sequence(page.startPage, page.endPage)}">
+            <div th:onclick="cardAllAjax([[${i}]],[[${boardType}]])" th:text="${i}"
+              class="clickable flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            </div>
+          </li>
+          <li>
+            <button th:unless="${page.currentPage} == ${page.endPage}"
+              th:onclick="cardAllAjax([[${page.currentPage+1}]],[[${boardType}]])" class="flex items-center justify-center px-4 h-10 leading-tight 
+                       text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 
+                       hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 
+                       dark:hover:bg-gray-700 dark:hover:text-white">Next</button>
+          </li>
+        </ul>
+      </nav>
+
+    </div><!--카드세션 끝 div id="content"-->
+
+  </section>
+
+  <!-- footer -->
+  <th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+</body>
+
+
+<script th:inline="javascript">
+  let currentPage = /*[[${page.currentPage}]]*/ 0;
+  let board_type = /*[[${boardType}]]*/ 0;
+  const skillAllList = /*[[${skillList}]]*/[];
+  const skillMap = {};
+  const selectedSkill = {};
+  let selectedRegion = null;
+  let selectedOnOff = null;
+  skillAllList.forEach((skill) => {
+    skillMap[skill.skill_id] = skill;
+  });
+
+  let cardSort = 'latest';
+  const data = {
+    currentPage,
+    board_type,
+    cardSort,
+    skillList: [],
+    selectedOnOff,
+    selectedRegion
+  }
+
+  //카드 전체 불러오게 하는 ajax
+  const cardAjax = function () {
+    console.log(data);
+    $.ajax({
+      type: "post",
+      url: "cardAllAjax",
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      //data,
+      success: function (sk_board) {
+        $("#content").replaceWith(sk_board);
+      }
+    });
+  }
+
+  /* 페이징처리 + 게시판 타입에 맞도록 불러오는 ajax*/
+  const cardAllAjax = function (page, boardType) {
+    console.log(page, boardType);
+    data.currentPage = page;
+    data.board_type = boardType;
+    cardAjax();
+  };
+
+
+  /* 최신순 인기순 처리  data오브*/
+  const sortByOption = function (option) {
+    data.cardSort = option;
+    cardAjax();
+  };
+
+  //북마크처리
+  const bmkClick = function (board_id, userId) {
+    console.log("hi")
+    if (!userId) {
+      location.href = "/loginView";
+    }
+    // AJAX 요청
+    $.ajax({
+      type: "POST", // 데이터를 서버로 보내기 위해 POST 방식 사용
+      url: "/bookmarkUpdate",
+      data: { board_id: board_id },
+      success: function (response) {
+        console.log("북마크 추가 성공", response);
+        cardAjax();
+      }
+
+    });
+  };
+
+  function goToCardDetail(url) {
+    window.location.href = url; // 페이지 이동
+  }
+
+  //드롭다운 기술스택 화면에 출력됨
+  const skillCheck = function (checkbox, skill_id) {
+    if (checkbox.checked) {
+      selectedSkill[skill_id] = skillMap[skill_id];
+    } else {
+      delete selectedSkill[skill_id];
+    }
+    data.skillList = Object.values(selectedSkill);
+    data.currentPage = 1
+    cardAjax();
+    console.log(selectedSkill);
+    console.log(data);
+  }
+
+  const selectRegion = function (radio, local_code, local) {
+    if (radio.checked) {
+      selectedRegion = local_code;
+      data.selectedRegion = selectedRegion;
+      data.currentPage = 1
+      cardAjax();
+    }
+    console.log(data);
+  }
+
+  const selectOnOff = function (radio, pr_type) {
+    if (radio.checked) {
+      selectedOnOff = pr_type;
+      data.selectedOnOff = selectedOnOff;
+      data.currentPage = 1
+      cardAjax();
+      // 나중에 div뿌려줄 떄 pr_type으로 내용 선택해야함
+    }
+    console.log(data);
+  }
+
+  const skillSearch = document.getElementById('dropdownStackSearch');
+  skillSearch.addEventListener("input", function (event) {
+    const searchReg = new RegExp(event.target.value, 'i');
+    const skillLi = document.getElementsByName("skillCheckLi");
+    skillLi.forEach((li) => {
+      if (!searchReg.test(li.dataset.skillName)) {
+        li.classList.add('hidden');
+      } else {
+        li.classList.remove('hidden');
+      }
+    })
+  })
+
+
+
+  // 리셋버튼 누르면 지역과 진행방식 radio 버튼들 리셋되도록
+  document.getElementById('RegPrtypeReset').addEventListener('click', function () {
+    // 첫 번째 라디오 버튼 리셋
+    document.getElementById('dropdownLocalButton').setAttribute('aria-expanded', 'false');
+    // 두 번째 라디오 버튼 리셋
+    document.getElementById('dropdownOnOffButton').setAttribute('aria-expanded', 'false');
+
+    // 라디오 버튼 리셋 (지역)
+    var radioButtonsLocal = document.querySelectorAll('input[name="local-radio"]');
+    radioButtonsLocal.forEach(function (button) {
+      button.checked = false;
+    });
+
+    // 라디오 버튼 리셋 (진행방식)
+    var radioButtonsOnOff = document.querySelectorAll('input[name="OnOff-radio"]');
+    radioButtonsOnOff.forEach(function (button) {
+      button.checked = false;
+    });
+
+    // 데이터 객체 업데이트
+    data.currentPage = 1;
+    data.selectedRegion = null; // 지역 정보 초기화
+    data.selectedOnOff = null; // 진행 방식 정보 초기화
+
+    // 카드 데이터 다시 불러오기
+    cardAjax();
+  });
+
+  //id로 받아와서 여기부분 고쳐야됨
+  //드랍다운 기술스택 필터 x누르면 삭제하기
+  document.querySelectorAll('input[name="skillCheck"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function () {
+      const skillId = this.value;
+
+      if (this.checked) {
+        displaySelectedSkill(skillId);
+      } else {
+        removeSelectedSkill(skillId);
+      }
+    });
+  });
+
+  // 선택한 스킬을 화면에 표시
+  function displaySelectedSkill(skillId) {
+    const selectedSkills = document.getElementById('selectedSkills');
+    const div = document.createElement('div');
+    div.className = "selectedSkill";
+    div.innerHTML = `<div class="ml-4 rounded-lg bg-gray-50">
+    		<span>${skillMap[skillId].skill_name}</span><button 
+            class="removeSkillBtn" 
+            value=${skillId}
+            style="margin-left: 5px; background-color: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px;"
+            onclick="removeSelectedSkillFromDiv(this)">X</button></div>`;
+    selectedSkills.appendChild(div);
+    cardAjax(); // 화면 업데이트
+  }
+
+  // X를 누르면 해당 스킬 DIV를 화면에서 제거하고 필터링 및 카드 업데이트
+  function removeSelectedSkillFromDiv(btn) {
+    const skillDiv = btn.closest('.selectedSkill');
+    const skillId = btn.value; // 수정된 부분: 데이터 속성으로부터 스킬 ID 가져오기
+    skillDiv.remove();
+
+    // 해당 스킬에 대한 체크박스 해제
+    const checkboxs = document.getElementsByName("skillCheck");
+    checkboxs.forEach((checkbox) => {
+      if (checkbox.value == skillId) {
+        console.log(checkbox);
+        checkbox.checked = false;
+        skillCheck(checkbox, checkbox.value);
+      }
+    });
+
+  }
+
+
+  // 선택한 스킬을 화면에서 제거 및 필터에서도 제거
+  function removeSelectedSkill(skillId) {
+    const selectedSkills = document.querySelectorAll('.selectedSkill');
+    selectedSkills.forEach(skill => {
+      if (skill.querySelector('button').value === skillId) {
+        skill.remove();
+
+        // 해당 스킬에 대한 체크박스도 해제
+        const checkbox = document.querySelector(`input[data-skill-id="${skillId}"]`);
+        if (checkbox) {
+          checkbox.checked = false;
+        }
+        cardAjax(); // 화면 업데이트
+      }
+    });
+  }
+
+
+
+
+
+
+
+</script>
+
+
+
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko"
+	 	  xmlns:th="http://www.thymeleaf.org"
+	 	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>DevHub</title>
+      <th:block th:replace="~{fragments/configure::configure}"></th:block>
+      <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+      <script defer th:src="@{js/dataRanking.js}"></script>
+
+      <script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js" th:src="@{js/jquery-3.7.1.min.js}"></script>
+
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+   
+      <style>
+         @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap");
+         body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f9fafb;
+         }
+      </style>
+
+   </head>
+
+   <body>
+
+      <!-- header -->
+      <th:block th:replace="~{fragments/header::headerFragment}"></th:block>
+    
+      <!-- section 1. 배너  -->
+      <section class="bg-center bg-no-repeat bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/conference.jpg')] bg-gray-700 bg-blend-multiply">
+         <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-56">
+            <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">
+               Welcome to DevHub for Newbies
+            </h1>
+            <p class="mb-8 text-lg font-normal text-gray-300 lg:text-xl sm:px-16 lg:px-48">
+               신입 개발자들이 함께모여 성장하는 공간, DevHub 프로젝트 모임을 통한 개발자의 성장을 응원합니다
+            </p>
+            <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
+               <a href="#" 
+                  class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+                  Get started
+                  <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180"
+                     aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 14 10">
+                     <path
+                       stroke="currentColor"
+                       stroke-linecap="round"
+                       stroke-linejoin="round"
+                       stroke-width="2"
+                       d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                  </svg>
+               </a>
+               <a href="#"
+                  class="inline-flex justify-center hover:text-gray-900 items-center py-3 px-5 sm:ms-4 text-base font-medium text-center text-white rounded-lg border border-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-400">
+                  Learn more
+               </a>
+            </div>
+         </div>
+      </section>
+    
+      <!-- section 2. 기술스택랭킹 그래프-->
+      <section>
+
+         <div class="bg-white">
+            <div class="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
+
+               <!-- Right Side -->
+               <div class="ml-4"> 
+
+                  <h2 class="text-3lg font-bold tracking-tight text-gray-900 sm:text-4xl">
+                     대기업 채용 기술 스택 Top5</h2>
+                  <!-- <p class="mt-4 text-gray-500">이곳에 설명을 넣을게여</p> -->
+
+                  <!-- 도넛 -->
+                  <div class="py-6" id="donut-chart"></div>
+
+                  <!-- Radio Select and the rest of the content -->
+                  <!--라디오 셀렉트  -->
+                  <ul id="majorcoTechStack"
+                     class="flex-wrap items-center w-full text-xs font-medium text-gray-900 bg-white rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                     style="text-align: center;">
+
+                     <div class="flex w-full">
+
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="All" type="radio" value="0" name="list-radio" checked
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                 <label for="All"
+                                    class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                    전체
+                                 </label>
+                           </div>
+                        </li>
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="programingLanguage" type="radio" value="1"
+                                 name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                 <label for="programingLanguage"
+                                    class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                    프로그래밍 언어
+                                 </label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="frontEnd" type="radio" value="2" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="frontEnd"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >프론트엔드</label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="mobile" type="radio" value="3" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="mobile"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >모바일</label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="testingTools" type="radio" value="4" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="testingTools"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >테스팅툴</label>
+                           </div>
+                        </li>
+                        
+                     </div>
+                  
+                     <div class="flex w-full">
+
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="backEnd" type="radio" value="5" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="backEnd"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >백엔드</label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="dataBase" type="radio" value="6" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="dataBase"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >데이터베이스</label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="data" type="radio" value="7" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="data"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >데이터</label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="devOps" type="radio" value="8" name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="devOps"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >데브옵스</label>
+                           </div>
+                        </li>
+                     
+                     
+                        <li class="w-full border border-gray-200 dark:border-gray-600">
+                           <div class="flex items-center ps-3">
+                              <input id="collaborationTools" type="radio" value="9"
+                                 name="list-radio"
+                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                              > <label for="collaborationTools"
+                                 class="w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >협업툴</label>
+                           </div>
+                        </li>
+
+                     </div>
+                  
+                  </ul>
+                  <div class="flex justify-end">
+			          <button onclick="location.href='techStackRanking'" type="button" class="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">최근 기술 동향 보러가기</button>
+			      </div>
+               </div>
+            </div>
+         </div>
+
+      </section> 
+
+      <!-- section3. 카드 -->
+      <section class="bg-white mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+
+         <h2 class="text-3lg font-bold tracking-tight text-gray-900 sm:text-4xl">
+            인기순</h2>
+         <!-- <p class="mt-4 text-gray-500">The walnut wood card tray is
+            precision mille.</p> -->
+
+         <!-- 메인 카드 섹션 -->
+         <div id="content">
+	         <div class="grid grid-cols-3 gap-3">
+	            
+               <!--폼 통일된 카드-->
+	            <div th:each="sk_card : ${sk_board}"
+                  class="border-solid border border-slate-200 bg-white fixed-height-card p-5 mt-4 shadow-lg rounded-2xl">
+
+	               <div class="w-auto">
+
+                     <!-- 카드 유형 & 북마크 버튼 -->
+                     <div class="flex justify-between items-center mb-4">
+                       <!-- 카드 유형 -->
+                       <div th:if="${sk_card.board_type} == 1"
+                         class="bg-yellow-200 text-yellow-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                         멘티모집
+                       </div>
+                       <div th:if="${sk_card.board_type} == 2"
+                         class="bg-blue-200 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                         멘토&멤버모집
+                       </div>
+                       <div th:if="${sk_card.board_type} == 3"
+                         class="bg-green-200 text-green-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                         멤버모집
+                       </div>
+                    
+                       <!-- 북마크 버튼 -->
+                       <!-- <button th:onclick="bmkClick([[${sk_card.board_id}]],[[${session.userId}]])" id="button">
+                         <i th:class="${sk_card.bookmarkYN} == 1 ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+                       </button> -->
+                     </div> 
+          
+                     <a th:href="@{/cardDetailForm(board_id=${sk_card.board_id})}"> <!-- 1board.html에서 카드를 누르면 board_id를 가지고 이동 -->
+
+                        <!-- 보드 아이디 -->
+                        <!-- <div th:text="${sk_card.board_id}"></div> -->
+
+                        <!-- D-day -->
+                        <div th:text="${sk_card.d_day lt 0 ? '마감' : 'D-' + sk_card.d_day}" 
+                          class="text-sm text-gray-500 mb-2"></div>
+
+                        <!-- 카드제목 가져오기 20글자 넘으면 잘라서 가져오자 -->
+                        <h3 th:text="${#strings.length(sk_card.board_title) > 20 ? #strings.substring(sk_card.board_title, 0, 20) + '...' : sk_card.board_title}"
+                          class="mb-3 text-lg font-bold"></h3>
+                        
+                        <!-- 스킬 이미지 5개 -->
+                        <div class="inline-flex flex-row gap-1 justify-center items-center mt-5 mb-5">
+                          <div th:each="skillImgUrl, iterStat : ${sk_card.skillImgUrlList}">
+                            <img class="h-8 w-8 rounded-full" th:if="${iterStat.index < 5}" th:src="${skillImgUrl}" alt=""/>
+                          </div>
+                        </div>
+                     
+                        <!--금액 & 조회수-->
+                        <div class="flex items-center justify-between space-x-1 mb-3">
+                          <!--금액부분은 팀원모집만 안나오도록, 공백처리를 해주자-->
+                          <h5 th:text="${sk_card.board_type} == '3' ? ' ' : ${sk_card.pr_price + '원'}"
+                            class="text-sm text-gray-500 font-bold"></h5>
+                          <!-- 조회수 -->
+                          <i class="mr-3 fas fa-eye text-sm text-gray-500 font-bold">
+                            [[${sk_card.board_view}]]</i>
+                        </div>
+                     
+                        <!-- 카드 작성자 & 별점 -->
+                        <div class="flex justify-between items-center text-2xl border-t border-gray-200 pt-4">
+                           <!-- 작성자 닉네임 -->
+                           <div class="flex">
+                             <i class="ml-5 fas fa-user-circle fa-s mr-2" style="color: gray"></i>
+                             <h5 th:text="${sk_card.user_name}" class="text-sm text-gray-500 mr-10 font-bold"></h5>
+                           </div>
+                        
+                           <!-- 별점 -->
+                           <div th:if="${sk_card.board_type == '1'}" class="flex items-center mr-5">
+                             <svg
+                               class="w-6 h-6 text-yellow-300 me-1"
+                               aria-hidden="true"
+                               xmlns="http://www.w3.org/2000/svg"
+                               fill="currentColor"
+                               viewBox="0 0 22 20">
+                               <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+                             </svg>
+                             <p class="ms-2 text-sm font-bold text-gray-900 dark:text-white">
+                               [[${sk_card.avg_score}]]
+                             </p>
+                           </div>
+                        </div>
+                     </a>
+                  </div> <!--div class="w-auto"-->
+	            </div> <!-- 카드전체 -->
+	         </div> <!-- 그리드 -->
+	         <div class="flex justify-end">
+			       <button onclick="location.href='1board?board_type=0&currentPage=0'" type="button" class="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">게시판 전체보기</button>
+			 </div>
+	      </div>
+      </section>
+
+      <!-- footer -->
+      <th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+
+   </body>
+</html>

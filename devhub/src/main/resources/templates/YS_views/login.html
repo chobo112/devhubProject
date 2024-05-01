@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<th:block th:replace="fragments/configure::configure"></th:block>
+<link href="./output.css" rel="stylesheet">
+<title>로그인</title>
+</head>
+
+<body>
+	<!-- 네브바 -->
+	<th:block th:replace="fragments/header::headerFragment"></th:block>
+	<div class="h-screen flex items-center justify-center">
+		<div
+			class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 ">
+			<form class="space-y-6" action="login" method="post">
+				<h5 class="text-xl font-medium text-gray-900 dark:text-white">Login</h5>
+				<div class="flex flex-col">
+					<label for="id"
+						class="mb-2 text-sm font-medium text-gray-900 dark:text-white">ID</label>
+					<input type="text" name="user_id" id="user_id"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+						placeholder="ID를 입력하세요" required />
+				</div>
+				<div class="flex flex-col">
+					<label for="password"
+						class="mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+					<input type="password" name="user_pw" id="user_pw"
+						placeholder="••••••••"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+						required />
+				</div>
+				<div class="flex items-start">
+					<a href="/findpasswordView"
+						class="ms-auto text-sm text-blue-700 hover:underline dark:text-blue-500">비밀번호
+						찾기</a>
+				</div>
+				<button type="submit"
+					class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</button>
+				<div class="text-sm font-medium text-gray-500 dark:text-gray-300">
+					<a href="/agree"
+						class="text-blue-700 hover:underline dark:text-blue-500">회원가입</a>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- 푸터 -->
+	<th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+	
+	
+	<script th:inline="javascript">
+		var isntuser = /*[[${userIsNot}]]*/'error';
+		if (isntuser === 'noid') {
+			alert("아이디가 없습니다. 회원가입 후 이용해 주세요.");
+		}
+	</script>
+
+
+	<script th:if="${msg != null}" th:inline="javascript">
+		var message = /*[[${msg}]]*/'error';
+		if (message !== '0') {
+			if (parseInt(message) < 5) {
+				alert(message + " 실패 하였습니다.\n5회 이상 틀리면 아이디가 비활성화 됩니다.");
+			} else {
+				alert("아이디가 비활성화 되었습니다.\n비밀번호 찾기를 눌러주세요.");
+			}
+		}
+	</script>
+
+
+
+
+
+
+</body>
+</html>

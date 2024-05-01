@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<th:block th:replace="~{fragments/configure::configure}"></th:block>
+	<link th:if="false" href="../../static/css/output.css" rel="stylesheet">
+	<link th:if="false" href="../../static/css/flowbite.min.css" rel="stylesheet">
+	<script th:if="false" defer src="../../static/js/flowbite.min.js"></script>
+	<script th:if="false" type="text/javascript" src="../../static/js/jquery-3.7.1.min.js"
+		th:src="@{js/jquery-3.7.1.min.js}"></script>
+	<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+	<script th:unless="${session.userId == null}" src="https://cdn.iamport.kr/v1/iamport.js"></script>
+</head>
+
+<script type="text/javascript" th:inline="javascript">
+	// 결제 사전 에러체크	
+	const isContinue = /*[[${isContinue}]]*/ true;
+	const errMsg = /*[[${errorMsg}]]*/ '에러임';
+	const preUrl = /*[[${preUrl}]]*/ '/';
+	if(!isContinue){
+		alert(errMsg);
+		location.href = '/';
+	}
+</script>
+
+<body>
+	<!-- 네브바 -->
+	<th:block th:replace="~{fragments/header::headerFragment}"></th:block>
+	<section
+		class="mx-auto max-w-2xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+		<p class="ml-5 font-bold text-3xl text-gray-900 dark:text-white">프로젝트 결제</p>
+		<form class="mt-10 p-10 relative overflow-x-auto border border-gray-200 rounded-xl  shadow-md sm:rounded-lg">
+		    <div class="mb-6">
+		        <input type="hidden" name="pay_muid" value="pay_muid" th:value="${pay.muid}">
+		        <label for="pay_pr_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">프로젝트 명</label>
+		        <input type="text" id="pay_pr_title" name="pay_pr_title" th:value="${pay.pr_title}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" readonly="readonly" />
+		    </div> 
+		    <div class="mb-6">
+		        <label for="pay_amount" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">결제 금액</label>
+		        <input type="text" id="pay_amount" name="pay_amount" th:value="${pay.pr_price}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" readonly="readonly" />
+		    </div>
+		    <div class="mb-6">
+		        <label for="pay_method" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">결제 방식</label>
+		        <select id="pay_method" name="pay_method" required="required"
+									class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+									<option value="card" selected>카드결제</option>
+									<option value="naverpay">네이버페이</option>
+									<option value="kakaopay">카카오페이</option>
+				</select>
+		    </div> 
+		    <div class="grid gap-6 mb-6 md:grid-cols-2">
+		        <div>
+		            <label for="pay_buyer_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">구매자명</label>
+		            <input type="text" id="pay_buyer_name" name="pay_buyer_name" th:value="${pay.user_name}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="구매자 이름을 입력해주세요" required />
+		        </div>
+		        <div>
+		            <label for="pay_tel" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone number</label>
+		            <input type="tel" id="pay_tel" name="pay_tel" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="010-0000-0000" pattern="[0-9]{3,4}-[0-9]{3,4}-[0-9]{4}" required />
+			        <p id="pay_tel_warn" class="mt-2 text-sm text-red-600 dark:text-red-500"></p>
+		        </div>
+		    </div>
+		    <div class="mb-6">
+		        <label for="pay_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email address</label>
+		        <input type="email" id="pay_email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="email@company.com" required />
+		        <p id="pay_email_warn" class="mt-2 text-sm text-red-600 dark:text-red-500"></p>
+		    </div> 
+		    <div class="flex items-start mb-6">
+		        <div class="flex items-center h-5">
+		        <input id="remember" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800" required />
+		        </div>
+		        <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">결제 내용에 동의합니다.</label>
+		    </div>
+		    <button type="submit" onclick="requestPay(); return false;"
+		    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">결제 진행</button>
+		</form>
+	</section>
+	
+	<!-- 푸터 -->
+	<th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+</body>
+<script type="text/javascript" th:inline="javascript">
+	const imp = "imp13124555";
+	IMP.init(imp);
+	let paymentObject = {
+			pg : 'html5_inicis.INIpayTest', //테스트 시 html5_inicis.INIpayTest 기재 
+		    pay_method : 'card',
+		    merchant_uid: /*[[${pay.muid}]]*/'Devhub_01', //상점에서 생성한 고유 주문번호
+		    name : /*[[${pay.pr_title}]]*/'프로젝트명 입력 부',
+		    amount : /*[[${pay.pr_price}]]*/1240,
+		    buyer_email : 'test@portone.io', // 구매자 메일
+		    buyer_name : /*[[${pay.user_name}]]*/'구매자이름',	// 구매자 이름
+		    buyer_tel : '010-1234-5678',   //필수 파라미터 입니다.
+	}
+	
+	let pay_muid = $("#pay_muid");
+	let pay_pr_title = $("#pay_pr_title");
+	let pay_amount = $("#pay_amount");
+	let pay_method = $("#pay_method");
+	let pay_buyer_name = $("#pay_buyer_name");
+	let pay_tel = $("#pay_tel");
+	let pay_email = $("#pay_email");
+	let pay_phone = $("#pay_phone");
+	let pay_email_warn = $("#pay_email_warn");
+	let pay_tel_warn = $("#pay_tel_warn");
+	let remember = document.getElementById("remember");
+	
+	function requestPay() {
+		pay_email_warn.text("");
+		pay_tel_warn.text("");
+		
+		// 폼 정보 유효체크
+		let emailRule = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;//이메일 정규식
+		let phoneRule = /^\d{2,3}-\d{3,4}-\d{4}$/;  //전화번호 정규식
+		
+		if(!phoneRule.test(pay_tel.val())){
+			pay_tel_warn.text("전화번호 형식에 맞게 입력해주세요");
+			pay_tel.focus();
+			return;
+		}
+		if(!emailRule.test(pay_email.val())){
+			pay_email_warn.text("이메일 형식에 맞게 작성해주세요");
+			pay_email.focus();
+			return;
+		}
+		if(!remember.checked){
+			alert("동의 후 진행해주세요");
+			remember.focus();
+			return;
+		}
+		
+		// 폼정보 결제요청 객체에 넣는 부분
+		paymentObject.buyer_email = pay_email.val();
+		paymentObject.pay_method = pay_method.val();
+		paymentObject.buyer_name = pay_buyer_name.val();
+		paymentObject.buyer_tel = pay_tel.val();
+		
+		console.log(paymentObject);
+		
+		IMP.request_pay(paymentObject, function(rsp) { // callback 로직
+			$.ajax({
+				async: false,
+				url: "conformPay",
+				method: "POST",
+				data: JSON.stringify({...rsp}),
+				dataType: "json",
+				contentType: "application/json",
+				success: (response)=>{
+					if(response.success){
+						alert('결제 완료');
+						location.href='MyProjectMain';
+					} else {
+						alert('결제에 실패하였습니다.');
+					}
+				},
+				error: () =>{alert('오류 관리자에게 문의하세요');}
+			});
+		});
+	}
+</script>
+</html>

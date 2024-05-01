@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로젝트 관리</title>
+
+    <th:block th:replace="fragments/configure::configure" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+
+    <script
+      type="text/javascript"
+      src="../../static/js/jquery-3.7.1.min.js"
+      th:src="@{js/jquery-3.7.1.min.js}"
+    ></script>
+
+    <style>
+      body {
+         font-family: 'Noto Sans KR', sans-serif;
+         background-color: #f9fafb;
+      }
+    </style>
+
+  </head>
+  <body>
+    <!-- header.html -->
+    <th:block th:replace="fragments/header::headerFragment" />
+
+    <!-- 내가 넣을 내용 -->
+    <section
+      class="bg-white mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800"
+    >
+    
+    <h5 class="text-3xl font-bold text-gray-900 mb-10 ml-5">프로젝트 관리</h5>
+    
+      <!-- Interactive tabs -->
+      <div>
+        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+          <ul
+            class="flex flex-wrap -mb-px text-sm font-medium text-center"
+            id="default-tab"
+            data-tabs-toggle="#default-tab-content"
+            role="tablist"
+          >
+            <li class="me-2" role="presentation">
+              <button
+                class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-500 hover:border-blue-500 focus:text-blue-500 focus:border-blue-500 dark:hover:text-gray-300"
+                id="profile-tab"
+                onclick="hideProfileTab(0)"
+                data-tabs-target="#profile"
+                type="button"
+                role="tab"
+                aria-controls="profile"
+                aria-selected="false"
+              >
+                전체보기
+              </button>
+            </li>
+            <li class="me-2" role="presentation">
+              <button
+                class="inline-block p-4 border-b-2 rounded-t-lg hover:text-blue-500 hover:border-blue-500 focus:text-blue-500 focus:border-blue-500 dark:hover:text-gray-300"
+                id="profile-tab"
+                onclick="hideProfileTab(1)"
+                data-tabs-target="#"
+                type="button"
+                role="tab"
+                aria-controls="dashboard"
+                aria-selected="false"
+              >
+                모집중
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div id="default-tab-content">
+
+          <!-- ajax로 바꿀 부분 -->
+          <div class="p-4 rounded-lg"
+            id="profile"
+            role="tabpanel"
+            aria-labelledby="profile-tab">
+
+            <!-- 카드 -->
+            <div>
+              <div class="grid grid-cols-3 gap-3">
+                <!-- 여기가 카드 하나임 -->
+                <div
+                  th:each="myBoard : ${listMyBoard }"
+                  class="border-solid border border-slate-200 bg-white fixed-height-card p-5 mt-4 shadow-lg rounded-2xl"
+                >
+                  <div class="w-auto">
+                    <a
+                      th:href="@{/cardDetailForm(board_id=${myBoard.board_id})}"
+                    >
+                      <!-- 카드 유형 -->
+                      <div class="flex justify-between items-center mb-4">
+                        <div
+                          th:if="${myBoard.board_type == '1'}"
+                          class="bg-yellow-200 text-yellow-600 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                        >
+                          멘토주도
+                        </div>
+                        <div
+                          th:if="${myBoard.board_type == '2'}"
+                          class="bg-blue-200 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                        >
+                          멘토모집
+                        </div>
+                        <div
+                          th:if="${myBoard.board_type == '3'}"
+                          class="bg-green-200 text-green-600 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                        >
+                          팀원모집
+                        </div>
+                      </div>
+
+                      <!-- D-day -->
+                      <div
+                        th:text="${myBoard.d_day lt 0 ? '마감' : 'D-' + myBoard.d_day}"
+                        class="text-xs text-gray-500 mb-2"
+                      ></div>
+
+                      <!-- 카드제목 가져오기 20글자 넘으면 잘라서 가져오자 -->
+                      <h3
+                        th:text="${#strings.length(myBoard.board_title) > 20 ? #strings.substring(myBoard.board_title, 0, 20) + '...' : myBoard.board_title}"
+                        class="mb-3 text-lg font-bold"
+                      ></h3>
+
+                      <!-- 스킬 이미지 5개 -->
+                      <div
+                        class="inline-flex flex-row gap-1 justify-center items-center mt-5 mb-5"
+                      >
+                        <div th:each="skills : ${myBoard.skills}">
+                          <img
+                            class="h-8 w-8 rounded-full"
+                            th:src="@{${skills.skill_img}}"
+                            alt=""
+                          />
+                        </div>
+                      </div>
+
+                      <!-- 금액 & 조회수 -->
+                      <div
+                        class="flex items-center justify-between space-x-1 mb-3"
+                      >
+                        <!--금액부분은 팀원모집만 안나오도록, 공백처리를 해주자-->
+                        <h5
+                          th:text="${myBoard.board_type} == 3 ? ' ' : ${myBoard.pr_price + '원'}"
+                          class="text-sm text-gray-500 font-bold"
+                        ></h5>
+                        <!-- 조회수 -->
+                        <i
+                          class="mr-3 fas fa-eye text-sm text-gray-500 font-bold"
+                        >
+                          [[${myBoard.board_view}]]</i
+                        >
+                      </div>
+                    </a>
+                  </div>
+
+                  <!-- 지원자 보기로 이동 -->
+                  <a
+                    th:href="@{/applyDetail(board_id=${myBoard.board_id})}"
+                    class="flex justify-center text-center font-bold mb-5 border-t border-gray-200 pt-4"
+                  >
+                    지원자 현황
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- 페이징 관련 -->
+            <nav th:unless="${page.total == 0}"
+              class="mt-5 flex justify-center"
+              aria-label="Page navigation example"
+            >
+              <ul class="inline-flex -space-x-px text-base h-10">
+                <li>
+                  <button
+                    th:unless="${page.currentPage} == 1"
+                    th:onclick="paging([[${page.currentPage-1}]],[[${saBoardStatus}]])"
+                    class="flex items-center justify-center px-4 h-10 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  >
+                    Previous
+                  </button>
+                </li>
+                <li
+                  th:each="i: ${#numbers.sequence(page.startPage, page.endPage)}"
+                >
+                  <div
+                    th:onclick="paging([[${i}]],[[${saBoardStatus}]])"
+                    th:text="${i}"
+                    class="clickable flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  ></div>
+                </li>
+                <li>
+                  <button
+                    th:unless="${page.currentPage} == ${page.endPage}"
+                    th:onclick="paging([[${page.currentPage+1}]],[[${saBoardStatus}]])"
+                    class="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          <script th:inline="javascript">
+            function hideProfileTab(board_status) {
+              data.currentPage = "1";
+              data.board_status = board_status;
+
+              $.ajax({
+                type: "get",
+                url: "allPage",
+                data,
+
+                success: function (result) {
+                  $("#profile").replaceWith(result);
+                },
+              });
+            }
+          </script>
+        </div>
+
+        <script th:inline="javascript">
+          let currentPage = /*[[${page.currentPage}]]*/ 0;
+          let board_status = /*[[${saBoardStatus}]]*/ 0;
+          const data = { currentPage, board_status };
+
+          function paging(page, board_status) {
+            data.currentPage = page;
+            data.board_status = board_status;
+
+            $.ajax({
+              type: "get",
+              url: "allPage",
+              data,
+
+              success: function (result) {
+                $("#profile").replaceWith(result);
+              },
+            });
+          }
+        </script>
+      </div>
+    </section>
+
+    <!-- footer.html -->
+    <th:block th:replace="fragments/footer::footerFragment" />
+  </body>
+</html>

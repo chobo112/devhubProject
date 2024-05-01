@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Stack</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <th:block th:replace="fragments/configure::configure"></th:block>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js"
+        th:src="@{js/jquery-3.7.1.min.js}"></script>
+
+    <script defer th:src="@{js/dataRanking.js}"></script>
+    
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            let krTechStackListCurrentPage = 1;
+            let krTechStackType = '0';
+
+            // 초기 페이지 로딩
+            loadkrTechStackRankingList(krTechStackListCurrentPage, krTechStackType);
+
+            $("#krListMore").click(function () {
+                krTechStackListCurrentPage++; // 현재 페이지를 1 증가
+                loadkrTechStackRankingList(krTechStackListCurrentPage, krTechStackType);
+                // replaceSharpInImageSrc();
+            });
+
+
+            $('#dropdownList li').on('click', function () {
+                krTechStackType = $(this).attr('value');
+                $('#dropdownActionButton').text($(this).text());
+                $('#dropdownActionButton').val($(this).attr('value'));
+                krTechStackListCurrentPage = 1; // 페이지 초기화
+                loadkrTechStackRankingList(krTechStackListCurrentPage, krTechStackType);
+            });
+
+            
+
+            function loadkrTechStackRankingList(krPage, techStackType, keyword) {
+                if (keyword == null) { keyword = ""; }
+                $.ajax({
+                    type: "get",
+                    url: "getKrTechStackRankingList",
+                    data: { krPage: krPage, techStackType: techStackType, keyword: keyword },
+                    success: function (krTechStackList) {
+                        $("#krTechStackRankingListTbody").replaceWith(krTechStackList);
+                        //replaceSharpInImageSrc();
+                        rankingArrow();
+                    }
+                });
+            }
+
+        });
+
+
+
+        $(document).ready(function () {
+            let gblListCurrentPage = 1;
+
+            // 초기 페이지 로딩
+            loadGblLangRankingList(gblListCurrentPage);
+
+            $("#gblListMore").click(function () {
+                gblListCurrentPage++; // 현재 페이지를 1 증가
+                loadGblLangRankingList(gblListCurrentPage);
+
+            });
+
+            function loadGblLangRankingList(gblPage) {
+                $.ajax({
+                    type: "get",
+                    url: "getGblLangRankingList",
+                    data: { gblPage: gblPage },
+                    success: function (gblLangList) {
+                        $("#gblLangListTbody").replaceWith(gblLangList);
+                        replaceSharpInImageSrc();
+                        rankingArrow();
+                    }
+                });
+            }
+        });
+
+
+        
+        $(window).on("load", function () {
+            replaceSharpInImageSrc();
+        })
+
+        function rankingArrow() {
+            $("[class*=techStackListTbody] tr").each(function () {
+                let prevRowKrRanking = parseInt($(this).find("[class*=prevRowKrRanking]").text());
+                let rowKrRanking = parseInt($(this).find("[class*=rowKrRanking]").text());
+
+                if (rowKrRanking < prevRowKrRanking) {
+                    $(this).find("svg[class*=upArrow]").css("display", "inline");
+                } else if (rowKrRanking > prevRowKrRanking) {
+                    $(this).find("svg[class*=downArrow]").css("display", "inline");
+                } else {
+                    $(this).find("svg[class*=unchanged]").css("display", "inline");
+                }
+            })
+        }
+
+        function replaceSharpInImageSrc() {
+            $("img[class*='techStackSkillImg']").each(function () {
+
+                var src = $(this).attr("src");
+                //var alt = $(this).attr("alt");
+
+                // #을 sharp로 치환
+                var replacedSrc = src.replace("#", "sharp");
+                // var replacedAlt = alt.replace("#", "sharp");
+
+                $(this).attr("src", replacedSrc);
+                //$(this).attr("alt", replacedAlt);
+            });
+        }
+    </script>
+
+
+
+</head>
+
+<body class="bg-white dark:bg-black">
+    <!--헤더 나오게 하는 -->
+    <th:block th:replace="fragments/header::headerFragment"></th:block>
+    <!--헤더 나오게 하는 -->
+
+    <section class="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+        <!-- 국내 기술 스택 인기도 순위 -->
+        <div style="height: 20%; display: flex; justify-content: center; align-items: center;"
+            class="bg-white dark:bg-gray-800 p-16">
+            <p class="font-bold dark:bg-gray-800 text-black dark:text-white text-5xl">국내 기술 스택 인기도 순위</p>
+        </div>
+
+        <!-- 국내 탑3 그림나오는 섹션 -->
+        <div th:with="krTechStackTop =${krTechStackTop3.subList(0, 3)}, krTechStack=${krTechStackList}"
+            class="flex justify-around bg-white border-b dark:bg-gray-800 dark:border-gray-700 font-bold">
+            <div class="text-center hover:scale-105 transition-all duration-500">
+                <img class="techStackSkillImg rounded-full" style="position: relative; width: 256px; height: 256px;"
+                    th:src="${krTechStackTop[0].skill_img}"
+                    onerror="this.onerror=null; this.src=this.getAttribute('data-alternative');" alt="">
+                <p th:text="${#numbers.formatDecimal(krTechStackTop[0].total_recruit_cnt*100/greatTotal, 1, 2) + '%'}
+           	   			+ '   ' + ${krTechStackTop[0].skill_name}" class="text-black dark:text-white text-2xl mt-2 mb-2"></p>
+            </div>
+
+            <div class="text-center hover:scale-105 transition-all duration-500" style="position: relative;">
+                <img class="techStackSkillImg rounded-full"
+                    style="width: 150px; height: 150px; position: relative; top: 35%"
+                    onerror="this.onerror=null; this.src=this.getAttribute('data-alternative');"
+                    th:src="@{/img/Skillstackimage/Programing Language/__${krTechStackTop[1].skill_name}__.png}" alt="">
+                <p th:text="${#numbers.formatDecimal(krTechStackTop[1].total_recruit_cnt*100/greatTotal, 1, 2) + '%'}
+           	   			+ '   ' + ${krTechStackTop[1].skill_name}" class="text-black dark:text-white text-2xl  mt-2 mb-2"
+                    style="position: relative; top: 35%">15%</p>
+            </div>
+
+            <div class="text-center hover:scale-105 transition-all duration-500" style="position: relative;">
+                <img class="techStackSkillImg rounded-full"
+                    style="position: relative; width: 70px; height: 70px; top: 50%; left:20%;"
+                    onerror="this.onerror=null; this.src=this.getAttribute('data-alternative');"
+                    th:src="@{/img/Skillstackimage/Programing Language/__${krTechStackTop[2].skill_name}__.png}" alt="">
+                <p th:text="${#numbers.formatDecimal(krTechStackTop[2].total_recruit_cnt*100/greatTotal, 1, 2) + '%'}
+           	   			+ '   ' + ${krTechStackTop[2].skill_name}" class="text-black dark:text-white text-2xl  mt-2 mb-2"
+                    style="position: relative; top: 62%">15%</p>
+            </div>
+        </div>
+
+
+
+        <div class="relative overflow-x-auto shadow-md">
+            <div style="height: 80;  align-items: center; "
+                class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pt-5 bg-white dark:bg-gray-900 pb-5">
+                <div>
+                    <button id="dropdownActionButton" data-dropdown-toggle="dropdownAction"
+                        style=" min-width: 140px; justify-content: center; text-align: center;"
+                        class="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                        type="button">
+                        <span class="sr-only">기술 스택 구분</span>
+                        기술 스택 구분
+                        <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 10 6">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 1 4 4 4-4" />
+                        </svg>
+                    </button>
+
+
+                    <!-- Dropdown menu -->
+                    <div id="dropdownAction"
+                        class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" id="dropdownList"
+                            aria-labelledby="dropdownActionButton">
+                            <li value="0"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                기술 스택 전체</li>
+                            <li value="1"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                프로그래밍 언어</li>
+                            <li value="2"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                프론트엔드</li>
+                            <li value="3"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                모바일</li>
+                            <li value="4"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                테스팅툴</li>
+                            <li value="5"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                백엔드</li>
+                            <li value="6"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                데이터베이스</li>
+                            <li value="7"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                데이터</li>
+                            <li value="8"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                데브옵스</li>
+                            <li value="9"
+                                class="block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                협업툴</li>
+                        </ul>
+                    </div>
+                </div>
+                <label for="table-search" class="sr-only">Search</label>
+                <div class="relative"
+                	style="display: none;">
+                    <div class="absolute inset-y-0 end-0 pr-4 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="krTechSearch" class="block p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                    	   data-dropdown-toggle="krAutocompleteList" placeholder="Search Technology Stack">
+                </div>
+            </div>
+
+
+            <!-- 테이블 시작 -->
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                style="overflow: hidden; text-align: center;">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="p-4">
+                            <div class="flex items-center">
+
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3">지난번 순위</th>
+                        <th scope="col" class="px-6 py-3">순위</th>
+                        <th scope="col" class="px-6 py-3">&nbsp;</th>
+                        <th scope="col" class="px-6 py-3 text-left">기술 스택 종류</th>
+                        <th scope="col" class="px-6 py-3">지분율</th>
+                        <th scope="col" class="px-6 py-3">변화율</th>
+                    </tr>
+                </thead>
+
+
+                <!-- thymeLeaf each 적용 -->
+                <tbody id="krTechStackRankingListTbody"
+                    class="techStackListTbody  text-gray-900 text-base dark:text-white dark:text-base font-bold">
+                    <tr th:each="krTechStack : ${krTechStackList}"
+                        class="hover:scale-105 transition-all ease-in-out duration-500 border-b bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td class="w-4 p-4"></td>
+
+
+                        <td th:text="${krTechStack.prevRowKrRanking}" class="prevRowKrRanking px-6 py-4">전년도순위 null</td>
+
+
+                        <td th:text="${krTechStack.rowKrRanking}" class="rowKrRanking px-6 py-4">
+                            <div class="flex items-center">올해순위</div>
+                        </td>
+
+
+                        <td class="px-6 py-4">
+                            <div class="arrowDiv flex items-center">
+                                <svg class="upArrow w-8 h-8 text-green-500 dark:text-green-400"
+                                    xmlns="http://www.w3.org/2000/svg" style="display: none;" fill="none"
+                                    viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="3" d="M10 5v10M15 10L10 5l-5 5" />
+                                </svg>
+                                <svg class="downArrow w-8 h-8 text-red-500 dark:text-red-400"
+                                    xmlns="http://www.w3.org/2000/svg" style="display: none;" fill="none"
+                                    viewBox="2 5 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="3" d="M12 19V5m0 14-4-4m4 4 4-4" />
+                                </svg>
+                                <svg class="unchanged w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    style="display: none; position : relative; left: 5px" width="30" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="5" d="M5 12h14" />
+                                </svg>
+                                <span class="text-xl ml-2"></span>
+                            </div>
+                        </td>
+
+
+                        <th scope="row"
+                            class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
+                            <img class="techStackSkillImg w-10 h-10 rounded-full" th:src="${krTechStack.skill_img}"
+                                th:data-alternative="${krTechStack.alternativeImagePath}"
+                                onerror="this.onerror=null; this.src=this.getAttribute('data-alternative');"
+                                alt="기술 스택">
+                            <div class="ps-3">
+                                <div th:text="${krTechStack.skill_name}" class="text-base font-semibold">테크</div>
+                                <div class="font-normal text-gray-500"></div>
+                            </div>
+                        </th>
+
+
+                        <td class="px-6 py-4">
+                            <p th:text="${#numbers.formatDecimal(krTechStack.rate*100, 1, 4) + '%'}">
+                                지분율</p>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <p
+                                th:text="${(krTechStack.rate-krTechStack.prevRate)*100 > 0 ? '+' + #numbers.formatDecimal((krTechStack.rate-krTechStack.prevRate)*100, 1, 4) : #numbers.formatDecimal((krTechStack.rate-krTechStack.prevRate)*100, 1, 4)} + '%'">
+                                변화율</p>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+
+            <div
+                class="flex flex-col sm:flex-row sm:justify-center sm:space-y-0
+					items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pt-5 bg-white dark:bg-gray-900 pb-5">
+                <button id="krListMore" style="height: 50px;"  
+                    class="inline-flex justify-center items-center py-3 px-5 text-lg font-bold font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+
+                    리스트 더보기
+                    <svg class="w-3.5 h-5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 14 15">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 1v12m0 0 4-4m-4 4L1 9" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!--국내 기술 스택 인기도 순위 테이블 끝 -->
+
+
+
+
+
+        <!-- 국내 기술 스택 인기도 순위 그래프섹션 -->
+        <div class="w-full bg-white shadow dark:bg-gray-800 p-4 md:p-6">
+
+            <div class="flex justify-between mb-3">
+                <div class="flex justify-center items-center">
+                    <h1 class="text-xl font-bold leading-none text-gray-900 dark:text-white pe-1"> 대기업 채용 기술 스택 Top5
+                    </h1>
+                    <svg data-popover-target="chart-info" data-popover-placement="bottom"
+                        class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer ms-1"
+                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm0 16a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm1-5.034V12a1 1 0 0 1-2 0v-1.418a1 1 0 0 1 1.038-.999 1.436 1.436 0 0 0 1.488-1.441 1.501 1.501 0 1 0-3-.116.986.986 0 0 1-1.037.961 1 1 0 0 1-.96-1.037A3.5 3.5 0 1 1 11 11.466Z" />
+                    </svg>
+                    <div data-popover id="chart-info" role="tooltip"
+                        class="absolute z-10 invisible inline-block text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
+                        <div class="p-3 space-y-2">
+                            <h3 class="font-semibold text-gray-900 dark:text-white">
+                                각 채용 사이트에서 원하는 기술 스택에 대한 채용 공고를 검색합니다.<br>
+                                검색 결과에서는 채용 공고의 제목, 회사, 링크, 기술 스택 등을 추출합니다.<br>
+                                이러한 프로세스를 여러 채용 사이트에서 반복하며 데이터를 수집합니다.<br>
+                                그 중에서도 대기업에서의 채용 공고만을 필터링하고, 대기업에서 요구하는 기술 스택을 파악합니다
+                            </h3>
+
+                        </div>
+                        <div data-popper-arrow></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div>
+
+                <ul id="majorcoTechStack"
+                    class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="All" type="radio" value="0" name="list-radio" checked
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="All"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">전체</label>
+                        </div>
+                    </li>
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="programingLanguage" type="radio" value="1" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="programingLanguage"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">프로그래밍
+                                언어</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="frontEnd" type="radio" value="2" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="frontEnd"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">프론트엔드</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="mobile" type="radio" value="3" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="mobile"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">모바일</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="testingTools" type="radio" value="4" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="testingTools"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">테스팅툴</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="backEnd" type="radio" value="5" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="backEnd"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">백엔드</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="dataBase" type="radio" value="6" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="dataBase"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">데이터베이스</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="data" type="radio" value="7" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="data"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">데이터</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="devOps" type="radio" value="8" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="devOps"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">데브옵스</label>
+                        </div>
+                    </li>
+
+
+                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                        <div class="flex items-center ps-3">
+                            <input id="collaborationTools" type="radio" value="9" name="list-radio"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                            <label for="collaborationTools"
+                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">협업툴</label>
+                        </div>
+                    </li>
+
+                </ul>
+
+
+                <!-- 국내 기술 스택 차트 생성 공간 -->
+                <div class="py-6" id="donut-chart"></div>
+
+
+            </div>
+        </div>
+
+        <!-- 그래프섹션 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <!-- 세계 프로그래밍 언어 인기도 순위 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+        <div style="height: 20%; display: flex; justify-content: center; align-items: center;"
+            class="bg-white dark:bg-gray-800 p-16">
+            <p class="font-bold dark:bg-gray-800 text-black dark:text-white text-5xl">세계 프로그래밍 언어 인기도 순위</p>
+        </div>
+
+        <!-- 세계 탑3 그림나오는 섹션 -->
+        <div th:with="gblLangTop =${gblLangTop3.subList(0, 3)}"
+            class="flex justify-around bg-white dark:bg-gray-800 dark:border-gray-700 font-bold">
+            <div class="text-center hover:scale-105 transition-all duration-500">
+                <img class="techStackSkillImg rounded-full" style="position: relative; width: 256px; height: 256px;"
+                    th:src="@{/img/Skillstackimage/Programing Language/__${gblLangTop[0].skill_name}__.png}" alt="">
+                <p th:text="${gblLangTop[0].rate + '%'}
+	           	   			+ '   ' + ${gblLangTop[0].skill_name}" class="text-black dark:text-white text-2xl mt-2 mb-2"></p>
+            </div>
+
+            <div class="text-center hover:scale-105 transition-all duration-500" style="position: relative;">
+                <img class="techStackSkillImg rounded-full"
+                    style="width: 150px; height: 150px; position: relative; top: 30%"
+                    th:src="@{/img/Skillstackimage/Programing Language/__${gblLangTop[1].skill_name}__.png}" alt="">
+                <p th:text="${gblLangTop[1].rate + '%'}
+	           	   			+ '   ' + ${gblLangTop[1].skill_name}" class="text-black dark:text-white text-2xl  mt-2 mb-2"
+                    style="position: relative; top: 35%">15%</p>
+            </div>
+
+            <div class="text-center hover:scale-105 transition-all duration-500" style="position: relative;">
+                <img class="techStackSkillImg rounded-full"
+                    style="position: relative; width: 70px; height: 70px; top: 50%; left:20%;"
+                    th:src="@{/img/Skillstackimage/Programing Language/__${gblLangTop[2].skill_name}__.png}" alt="">
+                <p th:text="${gblLangTop[2].rate + '%'}
+	           	   			+ '   ' + ${gblLangTop[2].skill_name}" class="text-black dark:text-white text-2xl  mt-2 mb-2"
+                    style="position: relative; top: 62%">15%</p>
+            </div>
+        </div>
+
+        <!-- 세계 프로그래밍 언어 그래프 -->
+
+        <div class="relative overflow-x-auto shadow-md">
+            <!-- 여기 접기 -->
+            <div style="height: 80;  align-items: center; "
+                class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pt-5 bg-white dark:bg-gray-900 pb-5">
+                <div>
+                    <!-- Dropdown menu -->
+
+                </div>
+                <label for="table-search" class="sr-only">Search</label>
+                <div class="relative" style="display: none;">
+                    <div class="absolute inset-y-0 end-0 pr-4 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="table-search-users" class="block p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
+                    dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Search Tech Stack">
+
+                </div>
+            </div>
+
+
+            <!--세계 프로그래밍 언어 테이블 시작 -->
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                style="overflow: hidden; text-align: center;">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="p-4">
+                            <div class="flex items-center">
+
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3">지난번 순위</th>
+                        <th scope="col" class="px-6 py-3">순위</th>
+                        <th scope="col" class="px-6 py-3">&nbsp;</th>
+                        <th scope="col" class="px-6 py-3 text-left">프로그래밍 언어</th>
+                        <th scope="col" class="px-6 py-3">지분율</th>
+                        <th scope="col" class="px-6 py-3">변화율</th>
+                    </tr>
+                </thead>
+
+
+                <!-- 테이블 바디에 thymeLeaf each 적용하기 -->
+                <tbody id="gblLangListTbody"
+                    class="techStackListTbody text-gray-900 text-base dark:text-white dark:text-base font-bold">
+                    <tr th:each="gblLang : ${gblLangList}"
+                        class="hover:scale-105 transition-all ease-in-out duration-500 bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+
+                        <td class="w-4 p-4"></td>
+
+                        <td th:text="${gblLang.last_rank}" class="prevRowKrRanking  px-6 py-4">전년도순위</td>
+
+                        <td class="rowKrRanking px-6 py-4" th:text="${gblLang.rowGblRanking}">올해순위
+                        </td>
+
+
+                        <td class="px-6 py-4">
+                            <div class="arrowDiv flex items-center">
+                                <svg class="upArrow w-8 h-8 text-green-500 dark:text-green-400"
+                                    xmlns="http://www.w3.org/2000/svg" style="display: none;" fill="none"
+                                    viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="3" d="M10 5v10M15 10L10 5l-5 5" />
+                                </svg>
+                                <svg class="downArrow w-8 h-8 text-red-500 dark:text-red-400"
+                                    xmlns="http://www.w3.org/2000/svg" style="display: none;" fill="none"
+                                    viewBox="2 5 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="3" d="M12 19V5m0 14-4-4m4 4 4-4" />
+                                </svg>
+                                <svg class="unchanged w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    style="display: none; position : relative; left: 5px" width="30" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="5" d="M5 12h14" />
+                                </svg>
+                                <span class="text-xl ml-2"></span>
+                            </div>
+                        </td>
+
+
+                        <td scope="row"
+                            class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
+                            <img class="techStackSkillImg w-10 h-10 rounded-full"
+                                th:src="@{./img/Skillstackimage/Programing Language/__${gblLang.skill_name}__.png}"
+                                alt="Jese image">
+                            <div class="ps-3">
+                                <div style="width: 100px;" th:text="${gblLang.skill_name}"
+                                    class="text-base font-semibold">
+                                </div>
+                                <div class="font-normal text-gray-500"></div>
+                            </div>
+                        </td>
+
+
+                        <td class="px-6 py-4">
+                            <p th:text="${gblLang.rate}">지분율</p>
+
+                        </td>
+
+
+                        <td class="px-6 py-4">
+                            <p th:text="${gblLang.change}">변화율</p>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+            <div
+                class="flex flex-col sm:flex-row sm:justify-center sm:space-y-0 items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pt-5 bg-white dark:bg-gray-900 pb-5">
+                <button id="gblListMore" style="height: 50px;"
+                    class="inline-flex justify-center items-center py-3 px-5 text-lg font-bold font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+                    리스트 더보기
+                    <svg class="w-3.5 h-5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 14 15">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 1v12m0 0 4-4m-4 4L1 9" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+        <!-- 세계 프로그래밍 언어 테이블 끝 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="">
+        </div>
+
+        <!-- 세계 프로그래밍 언어 그래프 -->
+        <div>
+            <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 flex justify-center items-center">
+                <!-- w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 -->
+                <h1 class="fs-6  text-xl font-bold leading-none text-gray-900 dark:text-white pe-1 pt-5 mb-3">프로그래밍 언어
+                    세계적
+                    관심도 순위 Top5
+                </h1>
+            </div>
+
+
+
+
+            <!-- 차트 생성 공간 -->
+            <div class="pr-10 pl-10 dark:bg-gray-800" id="bar-chart"></div>
+            <div class="pr-10 pl-10" id="bar-chart-color"></div>
+
+            <!-- 차트 생성 공간 -->
+
+        </div>
+
+
+
+
+
+        <!-- 세계 프로그래밍 언어 전체 -->
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 푸터 -->
+    <th:block th:replace="fragments/footer::footerFragment"></th:block>
+</body>
+
+
+
+
+</html>

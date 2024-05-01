@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.team2.PointMapper">
+	<select id="jhPointLogList" parameterType="Point_log" resultType="Point_log">
+		SELECT * 
+		FROM
+		(
+			SELECT rownum rn, a.*
+			FROM
+				(SELECT p.*, b.pr_title, b.tot_round
+				 FROM point_log_tbl p , BOARD_TBL b
+				 WHERE p.board_id = b.board_id (+)
+				 AND p.user_id =#{user_id}
+				 <if test="search != '' and search != null">
+					AND b.pr_title like '%'||#{search}||'%'
+				</if>
+				 ORDER BY point_date DESC) a
+			WHERE POINT_DATE >= #{date}
+			
+		)
+		WHERE rn BETWEEN #{start} and #{end}
+	</select>
+	
+	<select id="jhTotalPointCnt" parameterType="Point_log" resultType="int">
+		SELECT count(*)
+		FROM point_log_tbl p , board_tbl b
+		WHERE p.board_id = b.board_id (+)
+		AND p.user_id =#{user_id}
+		AND point_date >= #{date}
+		<if test="search != '' and search != null">
+			AND b.pr_title like '%'||#{search}||'%'
+		</if>
+	</select>
+	
+	<select id="jhGetUser" parameterType="String" resultType="User">
+		SELECT *
+		FROM user_tbl
+		WHERE user_id = #{user_id}
+	</select>
+	
+	<select id="jhUserPoint" parameterType="String" resultType="long">
+		SELECT point
+		FROM user_tbl
+		WHERE  user_id = #{user_id}
+	</select>
+	
+	<select id="jhNextPointId" parameterType="Refund" resultType="long">
+		SELECT NVL(MAX(point_id),0)+1
+		FROM point_log_tbl
+		WHERE user_id = #{user_id}
+	</select>
+	
+	<insert id="jhInsertRefund" parameterType="Refund">
+		INSERT INTO refund_tbl (user_id, point_id,account,account_owner,bank,point) 
+		VALUES (#{user_id},#{point_id},#{account},#{account_owner},#{bank},#{point})
+	</insert>
+	
+	<insert id="jhInsertPointLog" parameterType="Refund">
+		INSERT INTO point_log_tbl (user_id, point_id,point,point_type) 
+		VALUES (#{user_id},#{point_id},#{point},'1')
+	</insert>
+	
+	<update id="jhUpdatePointUser" parameterType="Refund">
+		UPDATE user_tbl
+		SET point = point - #{point}
+		WHERE user_id = #{user_id}
+	</update>
+	
+	<select id="jhIsPossiblePayment" parameterType="pay" resultType="int">
+		SELECT count(*)
+		FROM apply_tbl a, board_tbl b
+		WHERE a.user_id = #{user_id}
+		AND a.board_id = #{board_id}
+		AND a.ap_accept = '1'
+		AND a.board_id = b.board_id
+		AND b.board_type IN ('1','2')
+		AND NVL(b.mentor_id,' ') != a.user_id
+	</select>
+	
+	<select id="jhAlreadyPay" parameterType="Pay" resultType="int">
+		SELECT count(*)
+		FROM pay_tbl
+		WHERE user_id = #{user_id}
+		AND board_id = #{board_id}
+		AND pay_status = '1'
+	</select>
+	
+	<select id="jhFullGroupNum" parameterType="Pay" resultType="int">
+		SELECT g.group_num
+		FROM apply_tbl a, group_tbl g
+		WHERE a.user_id = #{user_id}
+		AND a.board_id = #{board_id}
+		AND a.board_id = g.board_id
+		AND a.group_id = g.group_id
+	</select>
+	
+	<select id="jhCurAcceptedGroupNum" parameterType="Pay" resultType="int">
+		SELECT count(*)
+		FROM apply_tbl a1, apply_tbl a2
+		WHERE a1.board_id = #{board_id}
+		AND a1.user_id = #{user_id}
+		AND a1.board_id = a2.board_id
+		AND a2.group_id = a1.group_id
+		AND a2.ap_result = '1'
+	</select>
+	
+	<insert id="jhInsertPay" parameterType="Pay" useGeneratedKeys="true" keyColumn="pay_id" keyProperty="pay_id" >
+		INSERT INTO pay_tbl (user_id,pay_id,board_id)
+		VALUES (#{user_id},pay_seq.nextval,#{board_id})
+	</insert>
+	
+	<select id="jhGetPayOne" parameterType="Pay" resultType="Pay">
+		SELECT p.*, b.pr_title,b.pr_price,u.user_name
+		FROM user_tbl u, board_tbl b, pay_tbl p
+		WHERE p.pay_id = #{pay_id}
+		AND p.board_id = b.board_id
+		AND p.user_id = u.user_id
+	</select>
+	
+	<select id="jhPayById" parameterType="String" resultType="Pay">
+		SELECT p.*, b.pr_price
+		FROM pay_tbl p, board_tbl b
+		WHERE pay_id = #{muid}
+		AND p.board_id = b.board_id
+	</select>
+	
+	<update id="jhPayUpdate" parameterType="Pay">
+		UPDATE pay_tbl
+		SET pay_status = #{pay_status}, pay_log = #{pay_log}
+		WHERE pay_id = #{pay_id}
+	</update>
+	
+	<select id="jhRecentAlarms" parameterType="String" resultType="Alarm">
+		SELECT *
+		FROM
+			(SELECT a.*, b.pr_title
+			FROM alarm_tbl a, board_tbl b
+			WHERE a.user_id = #{user_id}
+			AND a.board_id = b.board_id
+			ORDER BY a.al_read ASC,a.al_date DESC)
+		WHERE rownum BETWEEN 1 AND 5
+	</select>
+	
+	<delete id="jhDeleteAlarm" parameterType="Alarm">
+		DELETE FROM alarm_tbl
+		WHERE user_id = #{user_id}
+		AND board_id = #{board_id}
+		AND al_type = #{al_type}
+	</delete>
+	
+	<update id="jhAlarmRead" parameterType="Alarm">
+		UPDATE alarm_tbl
+		SET al_read = '1'
+		WHERE user_id = #{user_id}
+		AND board_id = #{board_id}
+		AND al_type = #{al_type}
+	</update>
+	
+	<select id="jhAlarmTotalCnt" parameterType="Alarm" resultType="int">
+		SELECT count(*)
+		FROM alarm_tbl
+		WHERE user_id = #{user_id}
+	</select>
+	
+	<select id="jhAlarmList" parameterType="Alarm" resultType="Alarm">
+		SELECT *
+		FROM 
+			(SELECT rownum rn, sel1.*
+			FROM
+				(SELECT a.*, b.pr_title
+				FROM alarm_tbl a, board_tbl b
+				WHERE a.user_id = #{user_id}
+				AND a.board_id = b.board_id
+				ORDER BY a.al_date DESC) sel1
+			)
+		WHERE rn BETWEEN #{start} AND #{end}
+	</select>
+	
+</mapper>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.team2.SK_board_detail">
+	<update id="updateView" parameterType="String">
+		update board_tbl
+		set
+			board_view = board_view + 1
+		where board_id = TO_NUMBER(#{board_id})
+			
+	</update>
+	
+	<select id="board_detail" parameterType="String" resultType="SK_Board_Card">
+			SELECT b.*, u.user_name, r.local,
+			    (SELECT ROUND(AVG(sc.sc_score),1)
+			     FROM score_tbl sc
+			     WHERE sc.mentor_id = b.user_id) AS avg_score
+			FROM board_tbl b, user_tbl u, region_tbl r
+			WHERE b.user_id = u.user_id
+			  and b.local_code = r.local_code(+)
+			  AND b.board_id = #{board_id}
+  </select>
+  
+  <select id="getGrouplist" parameterType="String" resultType="Group">
+  		select
+		   g.* 
+		from group_tbl g
+		where g.board_id = #{board_id}
+
+  </select>
+  
+   <select id="getGroupSkills" parameterType="Group" resultType="Skill">
+  		SELECT 
+		    s.*
+		FROM 
+		    skill_tbl s,
+		    (SELECT DISTINCT skill_id
+		     FROM grp_skill_tbl
+		     WHERE board_id = #{board_id}
+		     AND group_id = #{group_id}) skills
+		WHERE s.skill_id = skills.skill_id
+  	
+  </select>
+  
+  <select id="getIDs" parameterType="Grp_skill" resultType="Grp_skill">
+  	select gst.*
+	from board_tbl b, grp_skill_tbl gst
+	where b.board_id = gst.board_id
+	and gst.board_id = #{board_id}
+	and gst.group_id = #{group_id}
+	order by gst.group_id
+  	
+  </select>
+  
+  	<select id="applyCheck" parameterType="Apply" resultType="Apply" >
+  	 select a.user_id, a.board_id, a.group_id
+  	 from apply_tbl a
+  	 where a.user_id = #{user_id}
+  	 and   a.board_id = #{board_id}
+  	</select>
+  
+	<insert id="ApplyInsert" parameterType="Apply">
+    insert into apply_tbl (user_id, board_id, group_id, ap_accept, ap_result)
+    values (#{user_id}, #{board_id}, #{group_id}, #{ap_accept}, 0)
+	</insert>
+	
+
+	<insert id="acceptPayAlarm" parameterType="Board">
+	insert into alarm_tbl
+	values (#{user_id},#{board_id},'12',#{pr_price} || '원을 결제해주세요',0,sysdate)
+	</insert>
+	
+	<update id="increaseAcceptGroupNum" parameterType="Apply">
+	UPDATE group_tbl
+	SET accept_num = accept_num + 1
+	WHERE board_id = #{board_id}
+	AND group_id = #{group_id}
+	</update>
+	
+	<select id="boardByApply" parameterType="Apply" resultType="Board">
+	select *
+	from board_tbl
+	where board_id = #{board_id}
+	</select>
+	
+	<select id="applyUsers" parameterType="String" resultType="Apply">
+		select u.*
+		from apply_tbl a, user_tbl u
+		where a.board_id = #{board_id}
+		and a.ap_accept = '1'
+		and a.user_id = u.user_id
+	</select>
+
+  
+ <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+ 
+  <!-- paging 전에 갯 수 확인 -->
+  <select id="skTotalCmtCount" parameterType="Comment" resultType="int">
+  	SELECT count(*)
+  	FROM comment_tbl
+ 	WHERE board_id = #{board_id}
+  </select>
+ 
+	<!-- 댓글 paging 조회 -->
+		<select id="skGetCommentList" parameterType="Comment"
+			resultType="Comment">
+			SELECT *
+			FROM
+				(SELECT rownum rn, sel1.*
+				FROM
+					(SELECT a.*,b.user_name
+					FROM comment_tbl a, user_tbl b
+					WHERE a.user_id = b.user_id 
+					AND board_id = #{board_id}
+					ORDER BY cmt_id DESC ) sel1
+				) sel2
+			WHERE rn BETWEEN #{start} AND #{end}
+		</select>
+  
+  	<!-- 댓글 insert -->
+	<insert id="skCommentSaveInsert" parameterType="Comment">
+		insert into
+		COMMENT_TBL(
+		cmt_id
+		,board_id
+		,user_id
+		,cmt_content
+		,cmt_ref
+		,cmt_date
+		,cmt_depth
+		,cmt_numbering
+		)values(
+		COMMENT_SEQ.nextval
+		,#{board_id}
+		,#{user_id}
+		,#{cmt_content}
+		,COMMENT_SEQ.currval
+		,SYSDATE
+		,0
+		,0
+		)
+	</insert>
+	
+	<!-- 댓글삭제 -->
+	<delete id="skreplydelete" parameterType="Comment">
+		delete
+		from comment_tbl
+		WHERE cmt_id = #{cmt_id} AND user_id = #{user_id}
+	</delete>
+	
+<!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+  
+
+</mapper>

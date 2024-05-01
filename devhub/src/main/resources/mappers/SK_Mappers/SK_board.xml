@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.devhub.SK_boardMapper">
+ <select id="sk_head_typeList" parameterType="SK_Board_Card" resultType="SK_Board_Card">
+      SELECT *
+      FROM (SELECT rownum rn,sel1.* 
+           FROM (
+              SELECT 
+               board.board_type, 
+               board.board_title, 
+               board.board_view, 
+               (board.board_edate - sysdate) AS D_day,
+               avg_score.avg_score,
+               board.board_wdate,
+               board.pr_price,
+               board.board_id,
+               board.user_id,
+               user_tbl.user_name,
+               (
+                   SELECT 
+                       CASE 
+                           WHEN COUNT(*) = 1 THEN '1'
+                           ELSE '0'
+                       END
+                   FROM 
+                       bookmark_tbl 
+                   WHERE 
+                       board.board_id = bookmark_tbl.board_id 
+                       AND bookmark_tbl.user_id = #{user_id}
+               ) AS "bookmarkYN",
+               (
+                   SELECT 
+                       LISTAGG(st.skill_img, ', ') WITHIN GROUP (ORDER BY st.skill_id)
+                   FROM 
+                       GRP_skill_tbl GST, skill_tbl st
+                   WHERE 
+                       gst.skill_id = st.skill_id
+                       AND gst.board_id = board.board_id
+               ) AS "skill_images",
+               (
+                   SELECT 
+                       LISTAGG(st.skill_name, ', ') WITHIN GROUP (ORDER BY st.skill_name)
+                   FROM GRP_skill_tbl GST, skill_tbl st
+                   WHERE gst.skill_id = st.skill_id
+                       and gst.board_id = board.board_id
+               ) AS "skills"
+              FROM 
+              board_tbl board 
+              INNER JOIN (SELECT DISTINCT b.board_id
+                       FROM board_tbl b, group_tbl g, grp_skill_tbl gs
+                       where b.board_id = g.board_id(+)
+                        and g.board_id = gs.board_id(+)
+                       and g.group_id = gs.group_id(+)
+                       and b.BOARD_STATUS = '1'
+                       <if test="board_type != 0">
+                       AND b.board_type = #{board_type}
+                       </if>
+                       <if test="selectedOnOff != null and selectedOnOff != ''">
+                       AND b.pr_type = #{selectedOnOff}
+                       </if>
+                       <if test="selectedRegion != null and selectedRegion != ''">
+                       AND b.local_code = #{selectedRegion}
+                       </if>
+                       <if test="skillList != null and skillList.size != 0">
+                       AND gs.skill_id IN
+                       <foreach collection="skillList" item='item' separator=',' open='(' close=')'>
+                        #{item.skill_id}
+                       </foreach>
+                       </if>
+                       ) b2 on board.board_id = b2.board_id
+                 LEFT JOIN 
+                         (
+                             SELECT 
+                                 sc.mentor_id,
+                                 ROUND(AVG(sc.sc_score),1) AS avg_score
+                             FROM 
+                                 score_tbl sc
+                             GROUP BY 
+                                 sc.mentor_id
+                         ) avg_score ON board.user_id = avg_score.mentor_id
+                     INNER JOIN 
+                         user_tbl ON board.user_id = user_tbl.user_id
+               <choose>
+                  <when test="cardSort == 'popular'">
+                     ORDER BY board.board_view desc
+                  </when>
+                  <otherwise>
+                     ORDER BY board.board_wdate desc
+                  </otherwise>
+               </choose>
+               
+               
+              ) sel1 
+      )
+         WHERE rn BETWEEN #{start} AND #{end}
+         
+   </select>
+
+
+
+   <!-- 필터링 거는부분에서 카드 불러오기 -->
+   <select id="totalAllCard"  parameterType="SK_Board_Card" resultType="int">
+      SELECT count(DISTINCT b.board_id)
+        FROM board_tbl b, group_tbl g, grp_skill_tbl gs
+        where b.board_id = g.board_id(+)
+        and g.board_id = gs.board_id(+)
+        and g.group_id = gs.group_id(+)
+        and b.BOARD_STATUS = '1'
+        <if test="board_type != 0">
+        AND b.board_type = #{board_type}
+        </if>
+        <if test="selectedOnOff != null and selectedOnOff != ''">
+        AND b.pr_type = #{selectedOnOff}
+        </if>
+        <if test="selectedRegion != null and selectedRegion != ''">
+        AND b.local_code = #{selectedRegion}
+        </if>
+        <if test="skillList != null and skillList.size != 0">
+        AND gs.skill_id IN
+           <foreach collection="skillList" item='item' separator=',' open='(' close=')'>
+            #{item.skill_id}
+           </foreach>
+        </if>
+   </select>
+   
+         <!-- board_write form에서 스킬이미지 가져오기 -->
+     <select id="skSkillList" resultType="Skill">
+         select *
+         from skill_tbl
+   </select>
+   
+   
+   <insert id="boardInsert" parameterType="SK_board_write" useGeneratedKeys="true" keyColumn="board_id" keyProperty="board_id">
+   
+      INSERT INTO board_tbl (board_id, pr_title, board_wdate, board_edate, board_content, user_id, board_title,
+                             local_code, kakaolink, kakaopw, board_type, pr_sdate, pr_edate, pr_type,
+                             pr_price, mentor_id, min_people, tot_round)
+      VALUES (
+          board_seq.nextval, #{pr_title}, sysdate, #{board_edate}, #{board_content}, #{user_id}, #{board_title},
+          <choose>
+              <when test="pr_type == 0">
+                  NULL
+              </when>
+              <otherwise>
+                  #{local_code}
+              </otherwise>
+          </choose>,
+          #{kakaolink}, #{kakaopw}, #{board_type}, #{pr_sdate}, #{pr_edate}, #{pr_type}, #{pr_price},
+          <choose>
+              <when test="board_type == 1">
+                  #{user_id}
+              </when>
+              <otherwise>
+                  NULL
+              </otherwise>
+          </choose>,
+          #{min_people}, #{tot_round}
+      )
+
+   </insert>
+   
+
+   
+   <insert id="groupInsert" parameterType="Group">
+       insert into group_tbl (board_id, group_id, group_num, ismentor)
+       values (#{board_id}, 
+            #{group_id}, 
+               #{group_num}, 
+               <choose>
+                   <when test="group_id == 1">1</when>
+                   <otherwise>0</otherwise>
+               </choose>
+       )
+   </insert>
+   
+   <insert id="grpSkillInsert" parameterType="Grp_skill">
+       insert into grp_skill_tbl (skill_id, board_id, group_id) 
+       values (#{skill_id}, 
+               (select max(board_id) from board_tbl), 
+               #{group_id}
+              )
+   </insert>
+   
+     <select id="bmkCheck" resultType="BookMark">
+         select *
+         from bookmark_tbl bm
+         where bm.user_id = #{user_id}
+         and   bm.board_id = #{board_id}
+   </select>
+
+   <delete id="bmkDelete" parameterType="BookMark">
+       DELETE FROM bookmark_tbl
+       WHERE user_id = #{user_id} AND board_id = #{board_id}
+   </delete>
+
+   <insert id="bmkInsert" parameterType="BookMark">
+       INSERT INTO bookmark_tbl (user_id, board_id)
+       VALUES (#{user_id}, #{board_id})
+   </insert>
+
+   
+   <select id="skAllSkills" resultType="Skill">
+      SELECT *
+      FROM skill_tbl
+   </select>
+   
+   <select id="skAllRegions" resultType="Region">
+      SELECT *
+      FROM region_tbl
+   </select>
+   
+   <select id="filter" resultType="SK_Board_Card">
+      
+   
+   </select>
+   
+</mapper>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Introductions</title>
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+<link rel="stylesheet" href="dist/starrr.css">
+<style>
+@import
+	url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap')
+	;
+
+body {
+	font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 기본 상태의 밑줄 숨기기 */
+button.border-b-2 {
+	border-bottom-width: 0;
+}
+
+/* 마우스 오버시 밑줄 표시 및 넓이 조정 */
+button.border-b-2:hover {
+	border-bottom-width: 2px; /* 원하는 두께로 조정 */
+}
+/* 선 스타일 */
+.separator {
+	border-top: 1px solid #e5e7eb; /* 선 색상 및 두께 설정 */
+	margin-top: 10px; /* 선과 결제 버튼 사이의 간격 조정 */
+}
+
+</style>
+
+<th:block th:replace="fragments/configure::configure"></th:block>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+</head>
+<body>
+	<!-- 네브바 -->
+	<th:block th:replace="fragments/header::headerFragment"></th:block>
+
+
+
+
+
+	<!-- content -->
+	<section class="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
+
+	<h5 class="text-3xl font-bold text-gray-900 mb-10 ml-5">자기소개</h5>
+
+		<!-- tab -->
+
+
+
+		<div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+			<ul class="flex flex-wrap -mb-px text-sm font-medium text-center"
+				id="default-tab" data-tabs-toggle="#default-tab-content"
+				role="tablist">
+				<li class="me-2" role="presentation">
+					<button class="inline-block p-4 border-b-2 rounded-t-lg"
+						id="profile-tab" data-tabs-target="#profile" type="button"
+						role="tab" aria-controls="profile" aria-selected="false"
+						onclick="goToProfile()">자기소개</button>
+				</li>
+				<li class="me-2" role="presentation">
+					<button
+						class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+						id="dashboard-tab" data-tabs-target="#dashboard" type="button"
+						role="tab" aria-controls="dashboard" aria-selected="false"
+						onclick="goToScore()">평가후기</button>
+				</li>
+			</ul>
+		</div>
+
+
+
+
+
+
+
+
+		<!-- 
+		<div class="max-w-4xl mx-auto py-12"> -->
+
+
+		<div class="bg-white p-6 rounded-lg shadow-lg">
+			<div class="mb-6">
+				<div th:each="score:${myScore}">
+				
+				<div class="text-xl font-bold mb-2" th:text="${score.mentor_id}">minjiing님
+						평가점수</div>
+				
+
+				<div class="flex items-center">
+				    <svg class="w-4 h-4 text-yellow-300 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+				        <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+				    </svg>
+				    <p class="ms-2 text-sm font-bold text-gray-900 dark:text-white" th:text="${score.average_score}">4.95</p>
+				   
+				</div>
+				
+				
+				
+				
+				
+				
+				</div>
+			</div>
+
+
+			<div class="space-y-4">
+
+				<!-- Repeat for each review -->
+				<div class="flex flex-col p-4 bg-gray-200 rounded-lg"
+					th:each="userscore:${userScore}">
+					<div class="flex justify-between items-center mb-2">
+						<div class="flex items-center">
+							<div class="mr-4">
+								<i class="fas fa-user text-gray-700"></i>
+							</div>
+							<div class="text-gray-700 mr-4" th:text="${userscore.user_id}">user_id</div>
+							<svg class="w-4 h-4 text-yellow-300 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+				        <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+				    </svg>
+							<div class="text-yellow-400 text-xl"
+								th:text="${userscore.sc_score}">
+								<i class="fas fa-star"></i> <i class="fas fa-star"></i> <i
+									class="fas fa-star"></i> <i class="fas fa-star"></i> <i
+									class="fas fa-star"></i>
+							</div>
+						</div>
+					</div>
+					<div class="text-gray-600" th:text="${userscore.sc_cmt}">평가내용</div>
+				</div>
+			</div>
+
+		</div>
+	
+		<script>
+			function goToProfile() {
+				// 프로필 페이지로 이동하는 코드 작성
+				window.location.href = "/SelfIntroduction"; // 예시로 "/profile"로 이동하도록 작성
+			}
+
+			function goToScore() {
+				// 대시보드 페이지로 이동하는 코드 작성
+				window.location.href = "/MyScore"; 
+			}
+		</script>
+
+	</section>
+	<!-- Footer Fragment -->
+	<th:block th:replace="fragments/footer::footerFragment"></th:block>
+
+</body>
+</html>

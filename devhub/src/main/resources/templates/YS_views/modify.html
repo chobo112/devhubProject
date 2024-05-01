@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- <script src="https://code.jquery.com/jquery-latest.min.js"></script> -->
+<script src="../node_modules/flowbite/dist/flowbite.min.js"></script>
+<th:block th:replace="fragments/configure::configure"></th:block>
+<link href="./output.css" rel="stylesheet">
+<style>
+.btn {
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 16px;
+	outline: none;
+}
+
+/* 버튼 1의 스타일 */
+.btn-primary {
+	width: 150px;
+	background-color: #007bff;
+	color: #fff;
+}
+
+/* 버튼 2의 스타일 */
+.btn-secondary {
+	width: 150px;
+	background-color: #6c757d;
+	color: #fff;
+}
+</style>
+<script>
+	// javascript 비밀번호 확인
+	function modifyPwChk(e) {
+		var changeUserPw = $("#change_pw").val();
+		var changeUserChkPw = $("#change_chkpw").val(); // 확인 비밀번호도 가져오기
+
+		var regexPw = /^(?=.*[0-9])(?=.*[a-z])(?=.*[$@!%*#?&])[a-z0-9$@!%*#?&]{8,}$/;
+
+		if (!regexPw.test(changeUserPw)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#pwConfirm").css("color", "red").text(
+					"영문자, 숫자, 특수 기호가 각 하나씩 포함되어야 합니다.");
+		} else if (changeUserPw !== changeUserChkPw) {
+			// 비밀번호가 일치하지 않는 경우 처리
+			$("#pwConfirm").css("color", "red").text("비밀번호가 일치하지 않습니다.");
+		} else {
+			// 비밀번호가 올바르고 일치하는 경우 처리
+			$("#pwConfirm").css("color", "blue").text("비밀번호가 일치합니다.");
+		}
+	}
+
+	// 닉네임 정규 표현식 및 중복 확인 ajax 
+	function modifyChkNameType(e) {
+		// 사용자가 입력한 아이디
+		var modifyUserName = $("#user_name").val();
+
+		// 정규 표현식을 사용하여 사용자가 입력한 닉네임 형식을 검사
+		var regex = /^[a-zA-Z0-9가-힣]{2,10}$/;
+		if (!regex.test(modifyUserName)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#namechkMessage").css("color", "red").text(
+					"숫자 영문자 한글로 이루어진 2~10자리여야합니다.");
+			return; // 여기서 종료되고 함수가 더 이상 실행되지 않도록 함
+		} else {
+			$("#namechkMessage").css("color", "blue").text("");
+		}
+
+		// 여기서 ajax 호출
+		$.ajax({
+			url : '/modify/chkName',
+			method : 'post',
+			data : modifyUserName, // 사용자 ID를 String 객체 형태로 전달
+			dataType : 'json', // 서버로부터 JSON 형식의 응답을 기대
+			contentType : "application/json; charset=utf-8",
+			success : function(modifyChkNameYN) {
+				if (modifyChkNameYN > 0) {
+					// 아이디가 이미 존재하는 경우 처리
+					$("#userNameMessage").css("color", "red").text(
+							"이미 사용 중인 닉네임 입니다.");
+				} else {
+					// 아이디가 사용 가능한 경우 처리
+					$("#userNameMessage").css("color", "blue").text(
+							"사용 가능한 닉네임 입니다.");
+				}
+			},
+			error : function(modifyChkNameYN) {
+				// AJAX 요청 실패 시 처리
+				console.error("AJAX request failed:", error);
+			}
+		});
+	}
+
+	// modify email 정규표현식
+	function regEmailType(e) {
+		// 사용자가 입력한 이메일
+		var userEmail = $("#user_email").val();
+
+		// 정규 표현식을 사용하여 사용자가 입력한 ID의 형식을 검사
+		var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		if (!regex.test(userEmail)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#emailMessage").css("color", "red").text("형식의 맞지 않는 이메일 양식입니다.");
+		} else {
+			$("#emailMessage").css("color", "red").text("");
+		}
+		return;
+	}
+	function canclefunc() {
+		window.location.href = "/";
+	}
+</script>
+<title>Document</title>
+</head>
+
+<body>
+	<th:block th:replace="fragments/header::headerFragment"></th:block>
+	<div class="h-full flex items-center justify-center">
+		<div
+			class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+			<form class="space-y-6" action="/modifyUdate">
+				<h5 class="text-xl font-medium text-gray-900 dark:text-white">회원가입
+					수정</h5>
+				<div>
+					<label for="id"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ID</label>
+					<input th:value="${user.user_id}" type="text" name="user_id"
+						id="user_id"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+						placeholder="ID를 입력하세요" required readonly />
+					<!-- disabled는 비활성화 -->
+				</div>
+
+				<div class="flex">
+					<div class="w-1/2">
+						<label for="change_password"
+							class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">새
+							비밀번호</label> <input type="password" name="change_pw" id="change_pw"
+							placeholder="••••••••" onkeyup="modifyPwChk(event)"
+							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+							required />
+					</div>
+					<div class="w-1/2 pl-2">
+						<label for="change_check_password"
+							class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">새
+							비밀번호 확인</label> <input type="password" name="change_chkpw"
+							id="change_chkpw" placeholder="••••••••"
+							onkeyup="modifyPwChk(event)"
+							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+							required />
+					</div>
+				</div>
+				<label id="pwConfirm"></label>
+
+				<div>
+					<label for="nickName"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">닉네임</label>
+					<input th:value="${user.user_name}" type="text" name="user_name"
+						id="user_name"
+						class="bg-gray-50 border border-gray-300 text-gray-900 
+						text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
+						block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 
+						dark:placeholder-gray-400 dark:text-white"
+						onkeyup="modifyChkNameType(event)" placeholder="닉네임을 입력하세요"
+						required /> <label id="userNameMessage"></label>
+				</div>
+
+				<div class="mb-6">
+					<label for="email"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">이메일</label>
+					<input th:value="${user.user_email}" type="email" id="user_email"
+						name="user_email"
+						class="bg-gray-50 border border-gray-300 text-gray-900 
+						text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
+						block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 
+						dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 
+						dark:focus:border-blue-500"
+						onkeyup="regEmailType(event)" placeholder="이메일을 입력 하세요" required />
+					<label id="emailMessage"></label>
+				</div>
+
+
+				<div>
+					<label for="local"
+						class="block mb-2 text-sm f
+                ont-medium text-gray-900 dark:text-white">지역</label>
+
+					<select name="local_code" id="local_code"
+						class="bg-gray-50 border border-gray-300 text-gray-900 
+							text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
+							block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 
+							dark:placeholder-gray-400 dark:text-white">
+
+						<th:block th:each="item : ${regions}">
+
+							<option th:value="${item.local_code}"
+								th:selected="${item.local_code} == ${user.local_code}"
+								th:text="${item.local}">강북구</option>
+						</th:block>
+					</select>
+				</div>
+
+				<div class="flex items-start">
+					<a href="/withdrawView"
+						class="ms-auto text-sm text-blue-700 hover:underline dark:text-blue-500">회원
+						탈퇴 </a>
+				</div>
+
+				<div class="flex justify-between">
+					<button type="submit" onclick="return confirm('수정 하겠습니까??');"
+						class="btn btn-primary">저장</button>
+					<button id="cancleBtn" onclick="canclefunc()"
+						class="btn btn-secondary">취소</button>
+				</div>
+			</form>
+		</div>
+	</div>
+		
+	<!-- 푸터 -->
+	<th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+
+</body>
+
+</html>

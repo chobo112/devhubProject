@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bookmark</title>
+
+    <th:block th:replace="fragments/configure::configure" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+
+    <script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js" th:src="@{js/jquery-3.7.1.min.js}"></script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap");
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        background-color: #f9fafb;
+      }
+      .icon-bg-yellow {
+        background-color: #ffc107;
+      }
+      .icon-bg-blue {
+        background-color: #ebf4ff;
+      }
+      .icon-text-blue {
+        color: #3182ce;
+      }
+      .icon-bg-orange {
+        background-color: #fef3c7;
+      }
+      .icon-text-orange {
+        color: #f6ad55;
+      }
+      .fixed-height-card {
+        min-height: 230px; /* 설정된 최소 높이 */
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- header.html -->
+    <th:block th:replace="fragments/header::headerFragment" />
+
+    <!-- 내가 넣을 내용 -->
+    <section class="bg-white mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+      
+      <h5 class="text-3xl font-bold text-gray-900 mb-10 ml-5">북마크</h5>
+      
+      <!-- 북마크 탭 -->
+      <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+        <ul class="flex flex-wrap -mb-px">
+          <li class="me-2">
+            <a href="#"
+              class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+              aria-current="page"
+              >북마크</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 게시판 카드 -->
+      <div id="content">
+        <div class="grid grid-cols-3 gap-5">
+          
+          <!-- 이게 카드 하나임 -->
+          <div th:each="bookmark: ${listBookmark }"
+            class="border-solid border border-slate-200 p-5 mt-4 bg-white rounded-2xl shadow-lg fixed-height-card">
+            
+            <div class="w-auto">
+                
+              <!-- 카드 유형 & 북마크 버튼 -->
+              <div class="flex justify-between items-center mb-4">
+
+                <!-- 카드 유형 -->
+                <div th:if="${bookmark.board_type == '1'}"
+                    class="bg-yellow-200 text-yellow-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                    멘토주도
+                </div>
+                <div th:if="${bookmark.board_type == '2'}"
+                  class="bg-blue-200 text-blue-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  멘토모집
+                </div>
+                <div th:if="${bookmark.board_type == '3'}"
+                  class="bg-green-200 text-green-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  팀원모집
+                </div>
+
+                <!-- 북마크 버튼 -->
+                <button
+                  type="button"
+                  th:id="'bookmarkBtn'+${bookmarkStat.index}"
+                  th:index="${bookmarkStat.index}"
+                  th:board_id="${bookmark.board_id}"
+                  th:onclick="bookmark(this.getAttribute('index'), this.getAttribute('board_id'))">
+                  <i class="fas fa-bookmark"></i>
+                </button>
+
+                <script th:inline="javascript">
+                    function bookmark(index, board_id) {
+                      $.ajax({
+                        // 버튼을 누르면 화면에서 삭제됨
+                        url: "bookmarkCancle",
+                        type: "POST",
+                        data: { board_id: board_id },
+                        // contentType : "application/json; charset=utf-8",
+
+                        success: function (result) {
+                          $("#content").replaceWith(result);
+                        },
+                      });
+                    }
+                </script>
+
+              </div>
+
+              <a th:href="@{/cardDetailForm(board_id=${bookmark.board_id})}">
+
+                <!-- D-day -->
+                <div th:text="${bookmark.d_day lt 0 ? '마감' : 'D-' + bookmark.d_day}"
+                  class="text-sm text-gray-500 mb-2"></div>
+
+                <!-- 카드제목 가져오기 20글자 넘으면 잘라서 가져오자 -->
+                <h3 th:text="${#strings.length(bookmark.board_title) > 20 ? #strings.substring(bookmark.board_title, 0, 20) + '...' : bookmark.board_title}"
+                  class="mb-3 text-lg font-bold"></h3>
+
+                <!-- 스킬 이미지 5개 -->
+                <div class="inline-flex flex-row gap-1 justify-center items-center mt-5 mb-5">
+                  <div th:each="skills : ${bookmark.skills}">
+                    <img class="h-8 w-8 rounded-full" th:src="@{${skills.skill_img}}" alt="" />
+                  </div>
+                </div>
+
+                <!--금액 & 조회수-->
+                <div class="flex items-center justify-between space-x-1 mb-3">
+                  <!--금액부분은 팀원모집만 안나오도록, 공백처리를 해주자-->
+                  <h5 th:text="${bookmark.board_type} == 3 ? ' ' : ${bookmark.pr_price + '원'}"
+                    class="text-sm text-gray-500 font-bold"></h5>
+                  <!-- 조회수 -->
+                  <i class="mr-3 fas fa-eye text-sm text-gray-500 font-bold">
+                    [[${bookmark.board_view}]]</i>
+                </div>
+
+                <!-- 카드 작성자 & 별점 -->
+                <div class="flex justify-between items-center text-2xl border-t border-gray-200 pt-4">
+                  <!-- 작성자 닉네임 -->
+                  <div class="flex">
+                    <i class="ml-5 fas fa-user-circle fa-s mr-2" style="color: gray"></i>
+                    <h5 class="text-sm text-gray-500 mr-10 font-bold">[[${bookmark.user_name}]]</h5>
+                  </div>
+                
+                  <!-- 별점 -->
+                  <div th:if="${bookmark.board_type == '1'}" class="flex items-center mr-5">
+                    <svg
+                      class="w-6 h-6 text-yellow-300 me-1"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 22 20">
+                      <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+                    </svg>
+                    <p class="ms-2 text-sm font-bold text-gray-900 dark:text-white">
+                      [[${bookmark.user_score}]]
+                    </p>
+                  </div>
+                </div>
+                
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 페이징 -->
+        <nav th:if="${page.total > 0}" class="mt-5 flex justify-center" aria-label="Page navigation example">
+          <ul class="inline-flex -space-x-px text-base h-10">
+            <li>
+              <button
+                th:unless="${page.currentPage} == 1"
+                th:onclick="paging([[${page.currentPage-1}]])"
+                class="flex items-center justify-center px-4 h-10 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              >
+                Previous
+              </button>
+            </li>
+            <li th:each="i: ${#numbers.sequence(page.startPage, page.endPage)}">
+              <div
+                th:onclick="paging([[${i}]])"
+                th:text="${i}"
+                class="clickable flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              ></div>
+            </li>
+            <li>
+              <button
+                th:unless="${page.currentPage} == ${page.endPage}"
+                th:onclick="paging([[${page.currentPage+1}]])"
+                class="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              >
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <script th:inline="javascript">
+          let currentPage = /*[[${page.currentPage}]]*/ 0;
+          const data = { currentPage };
+
+          function paging(page) {
+            data.currentPage = page;
+
+            $.ajax({
+              type: "get",
+              url: "bmkPaging",
+              data,
+
+              success: function (result) {
+                $("#content").replaceWith(result);
+              },
+            });
+          }
+        </script>
+
+      </div>
+
+    </section>
+
+    <!-- footer.html -->
+    <th:block th:replace="fragments/footer::footerFragment" />
+  </body>
+</html>

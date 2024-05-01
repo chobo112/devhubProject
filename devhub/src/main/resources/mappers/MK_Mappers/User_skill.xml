@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.User_skill">
+	<!-- 자기소개 조회 user_id, user_intro, github -->
+	<!-- 스킬 조회 skill_name, skill_img -->
+	<!-- 스킬 추가 -->
+
+
+	<delete id="deletetSkill" parameterType="User_Skill">
+		DELETE FROM user_skill_tbl
+		WHERE user_id = #{user_id}
+		AND skill_id = #{skill_id}
+	</delete>
+	
+
+
+	<insert id="insertSkill" parameterType="User_Skill">
+		INSERT INTO user_skill_tbl (user_id, skill_id)
+		VALUES (#{user_id}, #{skill_id})
+	</insert>
+
+
+
+
+
+
+</mapper>
+
+
+
+
+
+

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en"
+	 	  xmlns:th="http://www.thymeleaf.org"
+	 	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지원자 관리</title>
+
+    <th:block th:replace="fragments/configure::configure"/>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+    <script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js" th:src="@{js/jquery-3.7.1.min.js}"></script>
+  
+    <style>
+      body {
+         font-family: 'Noto Sans KR', sans-serif;
+         background-color: #f9fafb;
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <!-- header.html -->
+    <th:block th:replace="fragments/header::headerFragment"/>
+
+    <!-- 내가 넣을 내용 -->
+    <section class="bg-white mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+      
+      <h5 class="text-3xl font-bold text-gray-900 mb-10 ml-5">지원자 관리</h5>
+      
+      <div th:each="info : ${listApplyDetailInfo }"  
+        class="bg-gray-100 mt-3 rounded-lg mx-auto w-full max-w-screen-xl p-5">
+
+        <!-- 그룹 헤더 -->
+        <h1 class="border-b-4 border-black text-2xl font-extrabold dark:text-white">
+          Group [[${info.group_id}]] 
+          <span th:if="${info.ismentor == '1'}" 
+            class="mb-3 text-2xl font-extrabold dark:text-white">(Mentor)</span> <p>
+          <small class="ml-10 ms-2 text-lg font-semibold text-gray-500 dark:text-gray-400">
+            <p th:id="'aNum'+${infoStat.index}"> 
+              <span class="ml-5">
+              현재 수락한 인원 : [[${info.accept_num}]] 명 
+              <p class="ml-5 mb-3">
+              모집 인원 : [[${info.group_num}]] 명
+              </span>
+          </small>
+        </h1>
+
+        <!-- 그룹별 지원자 -->
+        <div class="p-10">
+
+          <!-- 이거 인원수대로 ++ -->
+          <div th:each="users : ${info.users }"
+            class="flex border-b-2 border-black mt-2 justify-between items-center">
+
+            <div class="flex items-center">
+              <!-- 1. 사람모양 그림 -->
+              <div class="mr-5 flex-none w-14 h-14">
+              <div
+                class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600"
+              >
+                <svg
+                  class="absolute w-12 h-12 text-gray-400 -left-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+              </div>
+
+              <!-- 2. 닉네임 + 기술스택 컴포넌트 -->
+              <div class="flex flex-initial items-center w-auto ...">
+
+                <!-- 닉네임 -->
+                <div class="mr-5 w-auto h-14 text-center items-center">[[${users.user_name}]]</div>
+
+                <!-- 기술스택 -->
+                <div class="ml-5 inline-flex flex-wrap items-center">
+                  <div th:each="skills : ${users.skills }"
+                  class="bg-white mr-2 inline-flex flex-row items-center gap-2 h-8 py-1 pl-1 pr-3 hover:bg-surface-200 dark:hover:bg-surfacedark-200 focus:bg-surface-400 dark:focus:bg-surfacedark-400 border border-gray-500 dark:border-gray-200 rounded-[30px] text-sm tracking-[.00714em]">
+                    <div class="flex items-center justify-center w-auto h-6 overflow-hidden rounded-full">
+                      <span class="h-full material-symbols-outlined !text-white">
+                        <img class="h-full" th:src="@{${skills.skill_img}}" alt=" " />
+                      </span>
+                    </div>
+                    <span> [[${skills.skill_name}]]</span>
+                  </div>
+                </div>
+              
+              </div>
+
+            </div>
+
+            <!-- 3. 수락/거절 버튼 -->
+            <div th:if="${boardType != '1'}"
+              class="place-content-end ml-5 flex-none w-64">
+
+              <button th:id="'acceptBtn'+${infoStat.index}+${usersStat.index}"
+
+                th:disabled="${users.ap_accept != '0'} ? 'disabled'"
+                th:style="${users.ap_accept == '1' ? 'background: gray' : 'background: white'}"
+
+                th:board_id="${info.board_id}"
+                th:group_id="${info.group_id}"
+                th:user_id="${users.user_id}"
+                th:infoStat_index="${infoStat.index}"
+                th:userStat_index="${usersStat.index}"
+
+                th:onclick="accept(this.getAttribute('infoStat_index'), this.getAttribute('userStat_index'), this.getAttribute('board_id'), this.getAttribute('group_id'), this.getAttribute('user_id'))"
+
+                class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2">
+                수락
+              </button>
+
+              <button th:id="'rejectBtn'+${infoStat.index}+${usersStat.index}"
+
+                th:disabled="${users.ap_accept != '0'} ? 'disabled'"
+                th:style="${users.ap_accept == '2' ? 'background: gray' : 'background: white'}"
+
+                th:board_id="${info.board_id}"
+                th:group_id="${info.group_id}"
+                th:user_id="${users.user_id}"
+                th:infoStat_index="${infoStat.index}"
+                th:userStat_index="${usersStat.index}"
+
+                th:onclick="reject(this.getAttribute('infoStat_index'), this.getAttribute('userStat_index'), this.getAttribute('board_id'), this.getAttribute('group_id'), this.getAttribute('user_id'))"
+
+                class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2">
+                거절
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- 수락 버튼 클릭 시 -->
+    <script th:inline="javascript">
+      function accept(infoStat_index, userStat_index, board_id, group_id, user_id) {
+
+        var param = {
+          board_id : board_id,
+          group_id : group_id,
+          user_id :  user_id
+        }
+
+        $.ajax({
+
+          // Controller @RequestMapping(value="/accept")
+          url : 'accept',
+          // url : 'accept?board_id='+encodeURI(board_id)+'&group_id='+encodeURI(group_id)+'&user_id='+encodeURI(user_id),
+
+          type : 'POST',
+
+          // client > server data
+          data : JSON.stringify(param),
+          // data : board_id,group_id,user_id, 
+
+          // server > client return dataType
+          // 지정하지 않으면 jQuery가 MIME 기반으로 자동 해석
+          // dataType : JSON,
+
+          contentType : "application/json; charset=utf-8",
+
+          // success function
+          success : function(result) {
+
+            if (result > 0) {
+
+              // 업데이트 쿼리 성공 시 버튼 둘 다 비활성화
+              $('#acceptBtn' + infoStat_index + userStat_index).attr("disabled", true);
+              $('#rejectBtn' + infoStat_index + userStat_index).attr("disabled", true);
+
+              // 수락 버튼 색상 변경 처리
+              $('#acceptBtn' + infoStat_index + userStat_index).css('background', 'gray');
+
+              alert(user_id + '는 수락 처리되었습니다.');
+              alert( 'result->'+result);
+
+              $('#aNum' + infoStat_index).html(result);         /* span  id Tag */
+
+            } else {
+              alert("NOOOOOOOOOOOOOOOOOOOOO");
+            }
+
+          }
+
+        });
+
+      }
+    </script>
+
+    <!-- 거절 버튼 클릭 시 -->
+    <script th:inline="javascript">
+      function reject(infoStat_index, userStat_index, board_id, group_id, user_id) {
+
+        var param = {
+          board_id : board_id,
+          group_id : group_id,
+          user_id :  user_id
+        }
+
+        $.ajax({
+
+          // Controller @RequestMapping(value="/reject")
+          url : 'reject',
+          // url : 'reject?board_id='+encodeURI(board_id)+'&group_id='+encodeURI(group_id)+'&user_id='+encodeURI(user_id),
+
+          type : 'POST',
+
+          // client > server data
+          data : JSON.stringify(param),
+
+          // server > client return dataType
+          // 지정하지 않으면 jQuery가 MIME 기반으로 자동 해석
+          // dataType : JSON,
+
+          contentType : "application/json; charset=utf-8",
+
+          // success function
+          success : function(result) {
+
+            console.log(param);
+
+            if (result > 0) {
+              // 업데이트 쿼리 성공 시 버튼 둘 다 비활성화
+              $('#acceptBtn' + infoStat_index + userStat_index).attr("disabled", true);
+              $('#rejectBtn' + infoStat_index + userStat_index).attr("disabled", true);
+
+              // 거절 버튼 색상 변경 처리
+              $('#rejectBtn' + infoStat_index + userStat_index).css('background', 'gray');
+
+              alert(user_id + '는 거절 처리되었습니다.');
+
+            } else {
+              alert("NOOOOOOOOOOOOOOOOOOOOO");
+            }
+          },
+
+          // error function
+          error : function(param) { console.log(param) }
+
+        });
+
+      }
+
+    </script>
+
+    <!-- footer.html -->
+    <th:block th:replace="fragments/footer::footerFragment"/>
+  </body>
+</html>

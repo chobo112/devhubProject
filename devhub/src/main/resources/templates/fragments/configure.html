@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lagn="ko" xmlns:th="http://www.thymeleaf.org">
+    <th:block th:fragment="configure">
+        <link th:href="@{css/output.css}" rel="stylesheet"></link>
+    	<link th:href="@{css/flowbite.min.css}" rel="stylesheet"></link>
+    	<script defer th:src="@{js/flowbite.min.js}"></script>
+    	<script th:src="@{js/jquery-3.7.1.min.js}"></script>
+    	<script th:unless="${session.userId == null}"  th:src="@{js/alarm.js}" ></script>
+  </th:block>
+</html>

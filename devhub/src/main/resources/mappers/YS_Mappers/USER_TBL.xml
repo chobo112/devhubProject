@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.team2.UserMapper">
+	<!-- 회원가입 유저 -->
+	<insert id="ysinsertUser" parameterType="User">
+		Insert into
+		USER_TBL(user_id , user_pw, user_name,
+		user_email , github ,local_code
+		)
+		values
+		(#{user_id},#{user_pw},#{user_name},
+		#{user_email},#{github},#{local_code}
+		)
+	</insert>
+
+	<!-- 회원가입 스킬 -->
+	<insert id="ysinsertSkill" parameterType="User_skill">
+		Insert into
+		user_skill_tbl(user_id , skill_id
+		)
+		values
+		(#{user_id},#{skill_id}
+		)
+	</insert>
+
+	<!-- 지역 리스트 -->
+	<select id="ysRegionAll" resultType="Region">
+		SELECT *
+		FROM region_tbl
+	</select>
+
+	<!-- 스킬 리스트 -->
+	<select id="ysSkillAll" resultType="Skill">
+		SELECT *
+		FROM skill_tbl
+	</select>
+
+	<!-- 로그인 -->
+	<select id="ysLogin" parameterType="User" resultType="User">
+		select *
+		from user_tbl
+		where user_id=#{user_id} and user_pw=#{user_pw} and
+		del_status =0
+	</select>
+
+	<!-- 회원 탈퇴 -->
+	<select id="">
+		update user_tbl
+		set del_status =1
+		where user_id=#{user_id} and
+		user_pw=#{user_pw} and del_status =0
+	</select>
+
+	<!-- ajax Id check -->
+	<select id="chkId" parameterType="String" resultType="User">
+		SELECT *
+		FROM USER_TBL
+		WHERE USER_ID = #{userId}
+	</select>
+
+	<!-- ajax Name check -->
+	<select id="chkName" parameterType="String" resultType="User">
+		SELECT *
+		FROM USER_TBL
+		WHERE USER_Name = #{userName}
+	</select>
+
+	<!-- 수정 전 조회 -->
+	<select id="ysdetailmodify" parameterType="String"
+		resultType="User">
+		select *
+		from user_tbl
+		where user_id = #{user_id}
+	</select>
+
+	<!-- 수정 후 업데이트 -->
+	<update id="updateUser" parameterType="User">
+		update user_tbl
+		set user_pw
+		= #{change_pw},
+		user_name = #{user_name},
+		user_email = #{user_email},
+		local_code = #{local_code}
+		where user_id = #{user_id}
+		
+	</update>
+
+	<select id="modifyChkName" parameterType="String"
+		resultType="User">
+		SELECT *
+		FROM USER_TBL
+		WHERE USER_Name = #{modifyUserName}
+	</select>
+
+	<select id="findpassword" parameterType="String"
+		resultType="User">
+		select *
+		from user_tbl
+		where user_id = #{user_id} and
+		user_email = #{user_email}
+	</select>
+
+	<!-- 로그인 실패시 login_cnt 하나씩증가 -->
+	<update id="userLoginFail">
+		update user_tbl
+		set login_cnt = login_cnt + 1
+		where
+		user_id =
+		#{user_id}
+	</update>
+
+	<!-- 로그인시 login_cnt 초기화 -->
+	<update id="userSuccese">
+		update user_tbl
+		set login_cnt = 0
+		where user_id =
+		#{user_id}
+
+	</update>
+
+	<!-- update 전에 select -->
+	<select id="YSgetid" parameterType="User" resultType="User">
+		select *
+		from user_tbl
+		where
+		user_id = #{user_id}
+	</select>
+	
+	<!-- id 삭제 del_status =1 -->
+	<update id="yswithdraw" parameterType="User">
+		update user_tbl
+		set del_status =1
+		where user_id =#{user_id} and user_pw = #{user_pw}
+	
+	</update>
+	
+	<!-- 임시비밀번호 update 전에 사용자를 찾음 -->
+	<select id="ystempfinduser" parameterType="User" resultType="User">
+		select *
+		from user_tbl
+		where user_id=#{user_id} and user_email = #{user_email}
+	</select>
+	
+	<!-- 임시비밀번호 update -->
+	<update id="updateUserTempPassword" parameterType="User">
+		update user_tbl
+		set user_pw = #{user_pw} , login_cnt = 0
+		where user_id =#{user_id} and user_email = #{user_email}
+	</update>
+	
+	
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.SA_BookMarkMapper">
+
+	<select id="saTotalBookmark" parameterType="BookMark" resultType="int">
+	
+		SELECT Count(*) 
+		FROM bookmark_tbl 
+		WHERE user_id = #{user_id}
+	
+	</select>
+
+	<delete id="saBookmarkCancle" parameterType="BookMark">
+		delete from bookmark_tbl 
+		where user_id=#{user_id} 
+		and board_id=#{board_id}
+	</delete>
+
+</mapper>

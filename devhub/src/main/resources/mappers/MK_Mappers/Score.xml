@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.Score">
+
+
+	<select id="MyScore" resultType="Score">
+		SELECT mentor_id, AVG(sc_score)
+		AS average_score
+		FROM score_tbl
+		WHERE mentor_id
+		= #{loggedInUser}
+		GROUP BY
+		mentor_id
+	</select>
+
+
+
+	<select id="userScore" resultType="Score">
+		select user_id,sc_score,sc_cmt
+		from score_tbl
+		where mentor_id=#{loggedInUser}
+	</select>
+
+	<insert id="MentorScoreinsert" parameterType="Score">
+	INSERT INTO score_tbl (board_id, mentor_id,user_id, sc_score)
+	VALUES (#{board_id}, #{mentor_id},#{user_id}, #{sc_score})
+
+	</insert>
+	
+	<update id="MentorScoreUpdate" parameterType="Score">
+    UPDATE score_tbl
+    SET sc_score = #{sc_score}
+    WHERE board_id = #{board_id} AND mentor_id = #{mentor_id} AND user_id = #{user_id}
+</update>
+
+
+
+	<update id="MentorCommentUpdate" parameterType="Score">
+		UPDATE score_tbl
+		SET sc_cmt = #{sc_cmt}
+		WHERE board_id = #{board_id}
+		AND mentor_id = (
+		SELECT mentor_id
+		FROM user_tbl
+		WHERE user_id = #{user_id}
+		)
+
+	</update>
+
+
+
+	<insert id="MentorCommentInsert" parameterType="Score">
+		INSERT score_tbl
+		SET sc_cmt = #{sc_cmt}
+		WHERE board_id = #{board_id}
+		AND mentor_id = (
+		SELECT mentor_id
+		FROM user_tbl
+		WHERE user_id = #{user_id}
+		)
+
+	</insert>
+
+
+	<select id="resultCount" parameterType="Score" resultType="int" >
+		 SELECT COUNT(*)
+	    FROM score_tbl
+	    WHERE board_id = #{board_id} AND mentor_id = #{mentor_id}
+	</select>
+	
+	<select id="resultCommentCount" parameterType="Score" resultType="int" >
+		 SELECT COUNT(*)
+	    FROM score_tbl
+	    WHERE board_id = #{board_id} AND mentor_id = #{mentor_id}
+	</select>
+
+</mapper>

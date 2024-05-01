@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.User">
+	<!--자기소개 조회 user_id, user_intro,github -->
+	<select id="getintroduction" parameterType="String"
+		resultType="User">
+		SELECT
+		u.user_intro,
+		u.github
+		FROM user_tbl u
+		WHERE
+		u.user_id=#{loggedInUser}
+	</select>
+
+
+	<update id="introUpdate" parameterType="User">
+		update user_tbl
+		set
+		user_intro=#{user_intro}
+		where user_id=#{user_id}
+	</update>
+
+
+	<update id="githubUpdate" parameterType="User">
+		UPDATE user_tbl
+		set
+		github=#{github}
+		where user_id=#{user_id}
+	</update>
+
+
+
+
+
+
+</mapper>

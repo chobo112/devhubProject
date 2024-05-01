@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.Skill">
+
+	<!--자기소개 조회 user_id, user_intro,github -->
+	<select id="allSkill" resultType="Skill">
+		select skill_name,skill_id from
+		skill_tbl
+	</select>
+
+
+
+	<select id="getskill" resultType="Skill" parameterType="String">
+		SELECT
+		sk.skill_name,
+		sk.skill_img,
+		sk.skill_id
+		FROM user_tbl u
+		LEFT JOIN user_skill_tbl s ON
+		u.user_id = s.user_id
+		LEFT JOIN skill_tbl sk ON s.skill_id =
+		sk.skill_id
+		WHERE u.user_id =#{loggedInUser}
+	</select>
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.SA_SkillMapper">
+
+	<select id="saBoardSkills" parameterType="Long" resultType="Skill">
+	
+		SELECT s.*
+		FROM skill_tbl s
+		WHERE s.skill_id IN (SELECT gs.skill_id
+					                    FROM grp_skill_tbl gs
+					                  WHERE gs.board_id = #{board_id}
+					                    AND gs.group_id = 1)
+		AND ROWNUM BETWEEN 1 and 3
+	
+	</select>
+
+</mapper>

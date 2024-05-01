@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.devhub.Skill_Kr_skillMapper">
+	<select id="teKrSkillList" parameterType="map" resultType="Skill_Kr_skill">
+	<!-- rank() 안쓰고 rownumber()쓴 이유, 동일한 값이더라도 다른 순위를 매기고 싶어서  -->
+		SELECT *
+		FROM (
+		    SELECT s.*, NVL(k.total_recruit_cnt, 0) AS total_recruit_cnt,
+            NVL(k.total_recruit_cnt_ismajor, 0) AS total_recruit_cnt_ismajor,
+            kr_date,
+		    ROW_NUMBER() OVER (ORDER BY NVL(k.total_recruit_cnt, 0) DESC) AS rowKrRanking
+		    FROM skill_tbl s
+		    LEFT OUTER JOIN (
+		        SELECT skill_id, kr_date, 
+                       SUM(recruit_cnt) AS total_recruit_cnt,
+                       SUM(CASE WHEN ismajor = 1 THEN recruit_cnt ELSE 0 END) AS total_recruit_cnt_ismajor
+                FROM kr_skill_tbl
+                WHERE (skill_id, kr_date) IN (
+                    SELECT skill_id, MAX(kr_date)
+                    FROM kr_skill_tbl
+                    GROUP BY skill_id
+                )
+                GROUP BY skill_id, kr_date
+		    ) k ON s.skill_id = k.skill_id
+	    <if test="techStackType != 0">where skill_type = #{techStackType}</if>
+		)	
+		WHERE rowKrRanking BETWEEN 1 AND #{end}
+	</select>
+<!--		and skill_name like '%' || #{keyword} || '%'-->
+	
+	<select id="teKrTechStackListPrevData" parameterType="java.lang.String" resultType="Skill_Kr_skill">
+		    SELECT s.*, k.kr_date, NVL(k.total_recruit_cnt, 0) AS total_recruit_cnt,
+                    NVL(k.total_recruit_cnt_ismajor, 0) AS total_recruit_cnt_ismajor,
+		            ROW_NUMBER() OVER (ORDER BY NVL(k.total_recruit_cnt, 0) DESC) AS rowKrRanking
+		    FROM skill_tbl s
+		    LEFT OUTER JOIN (
+		        SELECT skill_id, kr_date, total_recruit_cnt, total_recruit_cnt_ismajor
+		        FROM (
+		            SELECT  skill_id, kr_date, SUM(recruit_cnt) AS total_recruit_cnt,
+                            SUM(CASE WHEN ismajor = 1 THEN recruit_cnt ELSE 0 END) AS total_recruit_cnt_ismajor,
+		                    ROW_NUMBER() OVER(PARTITION BY skill_id ORDER BY kr_date DESC) AS row_num
+		            FROM kr_skill_tbl
+		            GROUP BY skill_id, kr_date
+		        )
+		        WHERE row_num = 2
+		    ) k ON s.skill_id = k.skill_id     
+		    <if test="techStackTypeStr != 0">where skill_type = #{techStackType}</if>
+	</select>
+	
+	
+	<select id="teKrSkillTypeTotalList" parameterType="java.lang.String"  resultType="Skill_Kr_skill">
+	<!-- rank() 안쓰고 rownumber()쓴 이유, 동일한 값이더라도 다른 순위를 매기고 싶어서  -->
+		SELECT 
+		    SUM(t.total_recruit_cnt) AS sum_total_recruit_cnt,
+		    SUM(t.total_recruit_cnt_ismajor) AS sum_total_recruit_cnt_ismajor,
+		    COUNT(*) AS row_count
+		FROM (
+		    SELECT s.*, 
+		           NVL(k.total_recruit_cnt, 0) AS total_recruit_cnt,
+		           NVL(k.total_recruit_cnt_ismajor, 0) AS total_recruit_cnt_ismajor,
+		           kr_date,
+		           ROW_NUMBER() OVER (ORDER BY NVL(k.total_recruit_cnt, 0) DESC) AS rowKrRanking
+		    FROM skill_tbl s
+		    LEFT OUTER JOIN (
+		        SELECT skill_id, kr_date, 
+		               SUM(recruit_cnt) AS total_recruit_cnt,
+		               SUM(CASE WHEN ismajor = 1 THEN recruit_cnt ELSE 0 END) AS total_recruit_cnt_ismajor
+		        FROM kr_skill_tbl
+		        WHERE (skill_id, kr_date) IN (
+		            SELECT skill_id, MAX(kr_date)
+		            FROM kr_skill_tbl
+		            GROUP BY skill_id
+		        )
+		        GROUP BY skill_id, kr_date
+		    ) k ON s.skill_id = k.skill_id
+		) t
+		<if test="techStackTypeStr != 0">where skill_type = #{techStackTypeStr}</if>
+	</select>
+	
+	
+	
+	<insert id="teJobkoreaNewDateInsert" parameterType="Skill_Kr_skill">
+		Insert into kr_skill_tbl (SKILL_ID, KR_DATE, ISMAJOR, KR_REF, RECRUIT_CNT)
+		values (#{skill_id}, TRUNC(SYSDATE), 0, #{kr_ref}, #{recruit_cnt})
+	</insert>
+	
+	<insert id="teJobkoreaMajorNewDateInsert" parameterType="Skill_Kr_skill">
+		Insert into kr_skill_tbl (SKILL_ID, KR_DATE, ISMAJOR, KR_REF, RECRUIT_CNT)
+		values (#{skill_id}, TRUNC(SYSDATE), 1, #{kr_ref}, #{major_recruit_cnt})
+
+	</insert>
+	
+	
+	<insert id="teSaraminNewDateInsert" parameterType="Skill_Kr_skill">
+		Insert into kr_skill_tbl (SKILL_ID, KR_DATE, ISMAJOR, KR_REF, RECRUIT_CNT)
+		values (#{skill_id}, TRUNC(SYSDATE), 0, #{kr_ref}, #{recruit_cnt})
+
+	</insert>
+	
+	<insert id="teSaraminMajorNewDateInsert" parameterType="Skill_Kr_skill">
+		Insert into kr_skill_tbl (SKILL_ID, KR_DATE, ISMAJOR, KR_REF, RECRUIT_CNT)
+		values (#{skill_id}, TRUNC(SYSDATE), 1, #{kr_ref}, #{major_recruit_cnt})
+
+	</insert>
+
+
+
+
+
+
+</mapper>

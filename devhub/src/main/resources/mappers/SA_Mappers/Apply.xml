@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.SA_ApplyMapper">
+
+	<select id="saFindApply" parameterType="Apply" resultType="Apply">
+		select * from apply_tbl
+		WHERE board_id = #{board_id}
+		AND group_id = #{group_id}
+		AND user_id = #{user_id}
+	</select>
+
+	<update id="saAcceptUser" parameterType="Apply" statementType="CALLABLE">
+	
+		{call accept_applier (#{board_id, mode=IN, jdbcType=INTEGER},
+									#{group_id, mode=IN, jdbcType=INTEGER},
+									#{user_id, mode=IN, jdbcType=VARCHAR})}
+	
+	</update>
+
+	<insert id="saAcceptUserAlarm" parameterType="Apply">
+		INSERT INTO alarm_tbl
+		VALUES (#{user_id},#{board_id},'10','지원 수락 되었습니다',0,sysdate) 
+	</insert>
+	
+	<insert id="saRejectUserAlarm" parameterType="Apply">
+		INSERT INTO alarm_tbl
+		VALUES (#{user_id},#{board_id},'11','지원 거절 되었습니다',0,sysdate) 
+	</insert>
+
+	<update id="saRejectUser" parameterType="Apply">
+	
+		UPDATE apply_tbl
+		SET ap_accept = '2'
+		WHERE board_id = #{board_id}
+		AND group_id = #{group_id}
+		AND user_id = #{user_id}
+	
+	</update>
+	
+</mapper>

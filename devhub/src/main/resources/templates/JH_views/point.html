@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+<th:block th:replace="~{fragments/configure::configure}"></th:block>
+<link th:if="false" href="../../static/css/output.css" rel="stylesheet">
+<link th:if="false" href="../../static/css/flowbite.min.css"
+	rel="stylesheet">
+<script th:if="false" defer src="../../static/js/flowbite.min.js"></script>
+<script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js"
+	th:src="@{js/jquery-3.7.1.min.js}"></script>
+</head>
+
+<body>
+	<!-- 네브바 -->
+	<th:block th:replace="~{fragments/header::headerFragment}"></th:block>
+
+	<section
+		class="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8 dark:bg-gray-800">
+		<div id="refundwrap"
+			class="w-full p-4 text-center bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
+			<h5 class="mb-5 text-3xl font-bold text-gray-900 dark:text-white">
+				<span class="text-blue-600" th:text="${userName}">유저</span>님의 출금 가능
+				포인트
+			</h5>
+			<p
+				class="mb-5 text-5xl font-extrabold sm:text-5xl dark:text-gray-400">
+				<span class="text-yellow-300">₩</span> <span id="point"
+					th:text="${#numbers.formatInteger(userPoint, 0, 'COMMA')}">15,000</span>
+			</p>
+			<div
+				class="items-center justify-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4 rtl:space-x-reverse">
+				<button data-modal-target="crud-modal" data-modal-toggle="crud-modal" onclick="refund()"
+					class="w-full sm:w-auto bg-blue-700 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white  rounded-lg inline-flex items-center justify-center px-4 py-2.5">
+					출금신청</button>
+			</div>
+		</div>
+
+		<!-- Main modal -->
+		<div id="crud-modal" tabindex="-1" aria-hidden="true"
+			class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+			<div class="relative p-4 w-full max-w-md max-h-full ">
+				<!-- Modal content -->
+				<div class="relative bg-white rounded-lg shadow dark:bg-gray-700 border dark:border-gray-500">
+					<!-- Modal header -->
+					<div
+						class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+						<h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+							출금 신청</h3>
+						<button type="button"
+							class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+							data-modal-toggle="crud-modal">
+							<svg class="w-3 h-3" aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg" fill="none"
+								viewBox="0 0 14 14">
+                        <path stroke="currentColor"
+									stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                    </svg>
+							<span class="sr-only">Close modal</span>
+						</button>
+					</div>
+					<!-- Modal body -->
+					<form action="refund" class="p-4 md:p-5" method="post" >
+						<div class="grid gap-4 mb-4 grid-cols-6 sm:grid-cols-6">
+							<div class="sm:col-span-6 col-span-6">
+								<input type="hidden" name="user_id" value="user1" th:value="${user_id}">
+								<label for="user_name"
+									class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">유저명</label>
+								<input type="text" name="user_name" id="ref_name"
+									class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+									value="유저명" th:value="${userName}" disabled>
+							</div>
+							<div class="sm:col-span-6 col-span-6">
+								<label for="point" 
+									class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">출금포인트</label>
+								<input type="text" name="point" id="ref_point"
+									class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+									value="151000" th:value="${userPoint}" readonly>
+							</div>
+							<div class="sm:col-span-3 col-span-6">
+								<label for="category"
+									class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">은행</label>
+								<select id="category" name="bank" required="required"
+									class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+									<option value="" selected="">은행선택</option>
+									<option value="sc">SC제일은행</option>
+									<option value="ke">KEB하나은행</option>
+									<option value="gy">경남은행</option>
+									<option value="gw">광주은행</option>
+									<option value="ku">국민은행</option>
+									<option value="ki">기업은행</option>
+									<option value="no">농협은행</option>
+									<option value="da">대구은행</option>
+									<option value="bu">부산은행</option>
+									<option value="su">수협은행</option>
+									<option value="si">신한은행</option>
+									<option value="wo">우리은행</option>
+									<option value="wu">우체국예금</option>
+									<option value="ju">전북은행</option>
+									<option value="je">제주은행</option>
+									<option value="ka">카카오뱅크</option>
+									<option value="kb">케이뱅크</option>
+									<option value="to">토스뱅크</option>
+									<option value="ci">한국시티은행</option>
+								</select>
+							</div>
+							<div class="sm:col-span-3 col-span-6">
+								<label for="account" id="account_lbl"
+									class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">계좌번호</label>
+								<input type="text" name="account" id="account"
+									class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+									placeholder="계좌번호를 입력해주세요" required="">
+							</div>
+							<div class="sm:col-span-6 col-span-6">
+								<label for="account_owner"
+									class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">계좌 소유주</label>
+								<input type="text" name="account_owner" id="account_owner"
+									class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+									placeholder="계좌 소유주 이름을 입력해주세요" required="">
+							</div>
+						</div>
+						<button type="submit" onClick="return check()"
+							class="w-full items-center justify-center text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+							출금 신청
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div id="pointlogwrap"
+			class="mt-10 relative overflow-x-auto shadow-md sm:rounded-lg">
+			<div
+				class="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
+				<div>
+					<button id="dropdownRadioButton"
+						data-dropdown-toggle="dropdownRadio"
+						class="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+						type="button">
+						<svg class="w-3 h-3 text-gray-500 dark:text-gray-400 me-3"
+							aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+							fill="currentColor" viewBox="0 0 20 20">
+              <path
+								d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.982 13.982a1 1 0 0 1-1.414 0l-3.274-3.274A1.012 1.012 0 0 1 9 10V6a1 1 0 0 1 2 0v3.586l2.982 2.982a1 1 0 0 1 0 1.414Z" />
+            </svg>
+						<span id="filter-value">지난 30일</span>
+						<svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" stroke-linecap="round"
+								stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+            </svg>
+					</button>
+					<!-- Dropdown menu -->
+					<div id="dropdownRadio"
+						class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
+						data-popper-reference-hidden="" data-popper-escaped=""
+						data-popper-placement="top"
+						style="position: absolute; inset: auto auto 0px 0px; margin: 0px; transform: translate3d(522.5px, 3847.5px, 0px);">
+						<ul class="p-3 space-y-1 text-sm text-gray-700 dark:text-gray-200"
+							aria-labelledby="dropdownRadioButton">
+							<li>
+								<div
+									class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+									<input id="filter-radio-example-1" type="radio" value="1"
+										name="filter-radio"
+										class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+									<label for="filter-radio-example-1"
+										class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">지난
+										1일</label>
+								</div>
+							</li>
+							<li>
+								<div
+									class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+									<input id="filter-radio-example-2" type="radio" value="7"
+										name="filter-radio"
+										class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+									<label for="filter-radio-example-2"
+										class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">지난
+										7일</label>
+								</div>
+							</li>
+							<li>
+								<div
+									class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+									<input checked="" id="filter-radio-example-3" type="radio"
+										value="30" name="filter-radio"
+										class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+									<label for="filter-radio-example-3"
+										class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">지난
+										30일</label>
+								</div>
+							</li>
+							<li>
+								<div
+									class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+									<input id="filter-radio-example-4" type="radio" value="365"
+										name="filter-radio"
+										class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+									<label for="filter-radio-example-4"
+										class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">지난
+										1년</label>
+								</div>
+							</li>
+							<li>
+								<div
+									class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+									<input id="filter-radio-example-5" type="radio" value="0"
+										name="filter-radio"
+										class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+									<label for="filter-radio-example-5"
+										class="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">전체
+										기간</label>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<!-- 테이블 검색기능 -->
+				<label for="table-search" class="sr-only">Search</label>
+				<div class="relative">
+					<div
+						class="absolute inset-y-0 left-0 rtl:inset-r-0 rtl:right-0 flex items-center ps-3 pointer-events-none">
+						<svg class="w-5 h-5 text-gray-500 dark:text-gray-400"
+							aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+							xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+								d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+								clip-rule="evenodd"></path>
+            </svg>
+					</div>
+					<input type="search" id="table-search"
+						class="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						placeholder="검색할 프로젝트명을 입력해주세요">
+				</div>
+			</div>
+
+			<!-- 포인트 로그 테이블 -->
+			<div id="pointTable">
+				<table
+					class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+					<thead
+						class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-300">
+						<tr>
+							<th scope="col" class="px-6 py-3">날짜</th>
+							<th scope="col" class="px-6 py-3">프로젝트명</th>
+							<th scope="col" class="px-6 py-3">포인트</th>
+							<th scope="col" class="px-6 py-3">현재회차 / 총회차</th>
+							<th scope="col" class="px-6 py-3">입/출금</th>
+						</tr>
+					</thead>
+
+					<tbody id="pointTbody">
+						<tr th:each="item : ${datas}"
+							class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+							<th th:text="${item.date}" scope="row"
+								class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+								2024-02-26</th>
+							<td th:text="${item.pr_title}? ${item.pr_title} : '포인트 출금' "
+								class="px-6 py-4">테스트 프로젝트1</td>
+							<td th:text="${item.point}" class="px-6 py-4">10000</td>
+							<td th:text="${item.round} + ' / ' + ${item.tot_round}"
+								class="px-6 py-4">1 / 6</td>
+							<td th:text="${item.point_type} == '0'? '입금':'출금' "
+								class="px-6 py-4">입금</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- 테이블 페이지 작업 -->
+				<nav th:unless="${page.total} == 0"
+					class="flex items-center flex-column flex-wrap md:flex-row justify-between pt-4"
+					aria-label="Table navigation">
+					<span
+						class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">Showing
+						<span id="logCnt"
+						class="font-semibold text-gray-900 dark:text-white"
+						th:text="${page.start}+'-'+${page.end}">1-10</span> of <span
+						id="totCnt" class="font-semibold text-gray-900 dark:text-white"
+						th:text="${page.total}">50</span>
+					</span>
+					<ul class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
+						<li>
+							<button th:disabled="${page.currentPage}== 1"
+								th:onclick="getPointTable(currentPage-1)"
+								class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Prev</button>
+						</li>
+						<th:block
+							th:each="num : ${#numbers.sequence(page.startPage,page.endPage)}">
+							<li>
+								<button onclick="getPointTable()"
+									th:onclick="getPointTable([[${num}]])" th:text="${num}"
+									th:classappend="${num} == ${page.currentPage}? 'font-bold' "
+									class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">1</button>
+							</li>
+						</th:block>
+
+						<li>
+							<button th:disabled="${page.currentPage} == ${page.endPage}"
+								th:onclick="getPointTable(currentPage+1)"
+								class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</button>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+
+	</section>
+
+
+	<!-- 푸터 -->
+	<th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+	
+	<script th:inline="javascript">
+		let periodDays = 30;
+		let userId = /*[[${user_id}]]*/ "user1";
+		let userName = /*[[${userName}]]*/ "유저이름";
+		let userPoint = /*[[${userPoint}]]*/ 151000;
+		let error = /*[[${error}]]*/ 0;
+		let currentPage = "1";
+		let search = '';
+		console.log(periodDays,userId,currentPage,error);
+		if(error){
+			alert("잘못된 접근입니다.");
+		}
+		
+		
+		const refund = function(){
+			if(userPoint == 0){
+				alert("출금 가능한 금액이 없습니다.");
+				location.href="";
+			}
+			$.ajax({
+				type:"get",
+				url:`userPoint?user_id=${userId}`,
+				success: (point) => {
+					if(point){
+						$("#ref_name").val(userName);
+						$("#ref_point").val(point);
+					} else {
+						alert("잘못된 접근입니다.");
+					}
+				},
+				fail: ()=>{
+					alert("데이터를 불러오는데 실패하였습니다.");
+					location.href="";
+				}
+			});
+		}		
+		
+		const check = function() {
+			const reg = /[0-9,\-]{3,6}\-[0-9,\-]{2,6}\-[0-9,\-]/;
+			const isAccount = reg.test($("#account").val());
+			console.log(isAccount);
+			if(!isAccount){
+				$("#account_lbl").text("계좌번호를 다시 입력해주세요.");
+				$("#account_lbl").addClass(["text-red-500","font-bold"]);
+				$("#account").focus();
+			}
+			return isAccount;
+		}
+		
+		const filterSelect = function (e) {
+		    if (e.target.checked) {
+		        let str = "";
+		        const val = e.target.value;
+		        periodDays = val;
+		        if (val == 0)
+		            str = "전체기간";
+		        if (val == 1)
+		            str = "지난 1일";
+		        if (val == 7)
+		            str = "지난 7일";
+		        if (val == 30)
+		            str = "지난 30일";
+		        if (val == 365)
+		            str = "지난 1년";
+		        document.getElementById("filter-value").textContent = str;
+		        getPointTable(1);
+				$("#dropdownRadio").removeClass('block');
+				$("#dropdownRadio").addClass('hidden');
+		    }
+		}
+	
+		
+		const getPointTable = function(currPage) {
+			currentPage = currPage;
+			console.log(periodDays,userId,currentPage,search);
+			$.ajax({
+				type:"get",
+				url:`point?user_id=${userId}&periodDays=${periodDays}&currentPage=${currentPage}&search=${search}`,
+				success: (response) => {
+					let responseHTML =  $.parseHTML(response);
+					console.log(responseHTML[0].children[0].children[1].children.length);
+					if(responseHTML[0].children[0].children[1].children.length == 0){
+						alert('조회 가능한 정보가 없습니다.');
+					} else {
+						$("#pointTable").replaceWith(response)
+					}
+					console.log("ajax 수신 완료");
+				}
+			});
+		}
+		
+		document.getElementsByName("filter-radio")
+		   .forEach(item => item.addEventListener("change", (e) => {
+			   		filterSelect(e);
+			   }));
+		
+		let tableSearch = document.getElementById('table-search');
+		tableSearch.addEventListener("input", (event) => {
+			search = event.target.value;
+		});
+		tableSearch.addEventListener("keydown", (event) => {
+			if(event.key === 'Enter'){
+				getPointTable(1);
+				return;
+			}
+		});
+	</script>
+</body>
+</html>

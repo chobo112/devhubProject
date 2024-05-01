@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<typeAliases>
+		<typeAlias alias="Alarm"	type="com.oracle.team2.model.Alarm"/>
+		<typeAlias alias="Apply"	type="com.oracle.team2.model.Apply"/>
+		<typeAlias alias="Board"	type="com.oracle.team2.model.Board"/>
+		<typeAlias alias="BookMark"	type="com.oracle.team2.model.BookMark"/>
+		<typeAlias alias="Comment"	type="com.oracle.team2.model.Comment"/>
+		<typeAlias alias="Gbl_lang"	type="com.oracle.team2.model.Gbl_lang"/>
+		<typeAlias alias="Group"	type="com.oracle.team2.model.Group"/>
+		<typeAlias alias="Grp_skill"	type="com.oracle.team2.model.Grp_skill"/>
+		<typeAlias alias="Kr_skill"	type="com.oracle.team2.model.Kr_skill"/>
+		<typeAlias alias="Pay"	type="com.oracle.team2.model.Pay"/>
+		<typeAlias alias="Point_log"	type="com.oracle.team2.model.Point_log"/>
+		<typeAlias alias="Refund"	type="com.oracle.team2.model.Refund"/>
+		<typeAlias alias="Region"	type="com.oracle.team2.model.Region"/>
+		<typeAlias alias="Score"	type="com.oracle.team2.model.Score"/>
+		<typeAlias alias="Skill"	type="com.oracle.team2.model.Skill"/>
+		<typeAlias alias="User_skill"	type="com.oracle.team2.model.User_skill"/>
+		<typeAlias alias="User"	type="com.oracle.team2.model.User"/>
+		<typeAlias alias="SK_Board_Card"	type="com.oracle.team2.model.SK_Board_Card"/>
+		<typeAlias alias="Skill_Kr_skill"	type="com.oracle.team2.model.Skill_Kr_skill"/>
+		<typeAlias alias="Skill_Gbl_lang"	type="com.oracle.team2.model.Skill_Gbl_lang"/>
+		<typeAlias alias="ProjectResultDTO"	type="com.oracle.team2.model.ProjectResultDTO"/> 
+		<typeAlias alias="SK_board_write" type="com.oracle.team2.model.SK_board_write"/>
+	</typeAliases>
+</configuration>

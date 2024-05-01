@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.ProjectResultDTO">
+
+	<resultMap id="projectResultMap" type="ProjectResultDTO">
+		<id property="board_id" column="board_id" />
+		<result property="board_edate" column="board_edate" />
+		<result property="pr_sdate" column="pr_sdate" />
+		<result property="board_type" column="board_type" />
+		<result property="board_title" column="board_title" />
+		<result property="pay_status" column="pay_status" />
+		<result property="pr_price" column="pr_price" />
+		<result property="pr_title" column="pr_title" />
+		<result property="ap_accept" column="ap_accept" />
+		<result property="ap_result" column="ap_result" />
+		<result property="mentor_id" column="mentor_id" />
+		<result property="sc_score" column="sc_score" />
+		<result property="sc_cmt" column="sc_cmt" />
+		<collection property="skills" ofType="Skill"
+			resultMap="skillResultMap" />
+
+	</resultMap>
+	
+	
+	<resultMap id="skillResultMap" type="Skill">
+		<id property="skill_id" column="skill_id" />
+		<result property="skill_name" column="skill_name" />
+		<result property="skill_img" column="skill_img" />
+	</resultMap>
+	
+
+	
+	
+	<select id="MyProjectss" resultMap="projectResultMap">
+    SELECT
+            b.mentor_id,
+            b.board_id,
+            b.board_title,
+            b.board_edate,
+            b.board_type,
+            b.pr_price,
+            b.pr_title,
+            b.pr_sdate,
+            a.ap_accept,
+            a.ap_result,
+            sc.sc_score,
+            sc.sc_cmt,
+            s.skill_id,
+            s.skill_name,
+            s.skill_img,
+            p.pay_status
+        FROM
+            APPLY_TBL a
+        JOIN
+            BOARD_TBL b ON a.board_id = b.board_id
+        LEFT JOIN
+            SCORE_TBL sc ON b.board_id = sc.board_id
+        LEFT JOIN
+            GRP_SKILL_TBL g ON b.board_id = g.board_id
+        LEFT JOIN
+            SKILL_TBL s ON g.skill_id = s.skill_id
+        LEFT JOIN
+            PAY_TBL p ON b.board_id = p.board_id
+        WHERE
+            a.user_id = #{user_id}
+    </select>
+
+
+	<select id="acceptedProject" resultMap="projectResultMap">
+		
+		
+		SELECT
+		    mentor_id,
+		    board_id,
+		    board_title,
+		    board_edate,
+		    board_type,
+		    pr_price,
+		    pr_title,
+		    pr_sdate,
+		    ap_accept,
+		    ap_result,
+		    sc_score,
+		    sc_cmt,
+		    skill_id,
+		    skill_name,
+		    skill_img,
+		    pay_status
+		FROM
+		    (
+		        SELECT
+		            rownum rn,
+		            b.mentor_id,
+		            b.board_id,
+		            b.board_title,
+		            b.board_edate,
+		            b.board_type,
+		            b.pr_price,
+		            b.pr_title,
+		            b.pr_sdate,
+		            a.ap_accept,
+		            a.ap_result,
+		            sc.sc_score,
+		            sc.sc_cmt,
+		            s.skill_id,
+		            s.skill_name,
+		            s.skill_img,
+		            p.pay_status
+		        FROM
+		            APPLY_TBL a
+		            JOIN BOARD_TBL b ON a.board_id = b.board_id
+		            LEFT JOIN SCORE_TBL sc ON b.board_id = sc.board_id
+		            LEFT JOIN GRP_SKILL_TBL g ON b.board_id = g.board_id
+		            LEFT JOIN SKILL_TBL s ON g.skill_id = s.skill_id
+		            LEFT JOIN PAY_TBL p ON b.board_id = p.board_id
+		        WHERE
+		            a.user_id = #{user_id}
+		            AND a.ap_accept = '1'
+		        ORDER BY
+		            b.board_id ASC
+		    )
+		
+
+    </select>
+
+
+	
+
+
+	<select id="MyProjectCnt" parameterType="ProjectResultDTO"
+		resultType="int">
+		SELECT COUNT(DISTINCT board_id) 
+		FROM APPLY_TBL 
+		WHERE user_id =#{user_id}
+	</select>
+	
+		<select id="getAcceptedCnt" parameterType="ProjectResultDTO"
+		resultType="int">
+		SELECT COUNT(DISTINCT board_id) 
+		FROM APPLY_TBL 
+		WHERE user_id = #{user_id} AND ap_accept = '1'
+	</select>
+
+
+
+		    <resultMap id="payStatusResultMap" type="ProjectResultDTO">
+        <result property="pay_id" column="pay_id" />
+        <result property="pay_status" column="pay_status" />
+    </resultMap>
+
+    <!-- user_id가 'user2'인 사용자의 board_id와 관련된 pay_status 조회 -->
+    <select id="payStatus" resultMap="payStatusResultMap">
+        SELECT
+            b.board_id,
+            p.pay_status
+        FROM
+            BOARD_TBL b
+        LEFT JOIN
+            PAY_TBL p ON b.board_id = p.board_id
+        WHERE
+            b.user_id = #{user_id}
+    </select>
+
+</mapper>

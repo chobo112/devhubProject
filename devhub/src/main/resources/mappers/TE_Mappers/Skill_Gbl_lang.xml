@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.devhub.Skill_Gbl_langMapper">
+
+	<select id="teGblLangList" parameterType="int" resultType="Skill_Gbl_lang">
+		SELECT *
+		FROM (
+		    SELECT s.*, g.gbl_date, g.rate, g.change, g.last_rank,
+      				ROW_NUMBER() OVER (ORDER BY CAST(REPLACE(rate, '%', '') AS FLOAT) DESC) AS rowGblRanking
+		    FROM skill_tbl s
+		    JOIN (
+		        SELECT skill_id, gbl_date, rate, change, last_rank
+		               
+		        FROM gbl_lang_tbl
+		        WHERE (skill_id, gbl_date) IN (
+		            SELECT skill_id, MAX(gbl_date)
+		            FROM gbl_lang_tbl
+		            GROUP BY skill_id
+		        )
+		    ) g ON s.skill_id = g.skill_id
+		)
+		WHERE rowGblRanking BETWEEN 1 AND #{end}
+		ORDER BY CAST(REPLACE(rate, '%', '') AS FLOAT) DESC
+
+	</select>
+	
+	<select id="teGblLangTotalList" resultType="Skill_Gbl_lang">
+		SELECT s.*, g.*,
+		       ROW_NUMBER() OVER (ORDER BY CAST(REPLACE(rate, '%', '') AS FLOAT) DESC) AS rowGblRanking
+		FROM skill_tbl s
+		JOIN (
+		    SELECT skill_id, GBL_DATE, rate, change, last_rank
+		    FROM gbl_lang_tbl
+		    WHERE (skill_id, GBL_DATE) IN (
+		        SELECT skill_id, MAX(GBL_DATE)
+		        FROM gbl_lang_tbl
+		        GROUP BY skill_id
+		    )
+		) g ON s.skill_id = g.skill_id
+		ORDER BY CAST(REPLACE(g.rate, '%', '') AS FLOAT) DESC
+	</select>
+	
+	
+	
+	<insert id="teSkillTiobeNewIdInsert" parameterType="Skill_Gbl_lang">
+	    <selectKey keyProperty="skill_id" resultType="String" order="BEFORE">
+	         SELECT TO_CHAR(COALESCE(MAX(TO_NUMBER(skill_id)), 0) + 1) FROM skill_tbl
+	    </selectKey>
+	    
+	    INSERT INTO skill_tbl (skill_id, skill_name, skill_img, skill_type)
+	    VALUES (#{skill_id}
+	    		, #{skill_name}
+	    		, #{skill_img}
+	    		, #{skill_type})
+	</insert>	
+	
+	<insert id="teGblLangTiobeNewDateInsert" parameterType="Skill_Gbl_lang">
+	
+		<choose>
+	        <when test="skill_id != null">
+				INSERT INTO gbl_lang_tbl (skill_id, gbl_date, rate, change, last_rank)
+				SELECT  #{skill_id}
+						, SYSDATE
+						, #{rate}
+						, #{change}
+						, #{last_rank}
+				FROM DUAL
+           		WHERE NOT EXISTS (
+           			SELECT 1 FROM gbl_lang_tbl WHERE skill_id = #{skill_id} AND gbl_date = TRUNC(SYSDATE)
+           																	
+           			)
+			</when>
+			<otherwise>
+			
+			    INSERT INTO gbl_lang_tbl (skill_id, gbl_date, rate, change, last_rank)
+			    VALUES ((SELECT TO_CHAR(COALESCE(MAX(TO_NUMBER(skill_id)), 0) + 1) FROM skill_tbl)
+			            , SYSDATE
+			            , #{rate}
+			            , #{change}
+			            , #{last_rank})
+			</otherwise>
+        </choose>
+	</insert>
+	
+
+
+</mapper>

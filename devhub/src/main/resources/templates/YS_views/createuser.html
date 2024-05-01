@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<th:block th:replace="fragments/configure::configure"></th:block>
+<link
+	href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css"
+	rel="stylesheet" />
+<script
+	src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+<link href="./output.css" rel="stylesheet">
+
+<script>
+	// 정규표현식 및 아이디 중복 확인
+	function chIdType(e) {
+		// 사용자가 입력한 아이디
+		var userId = $("#user_id").val();
+
+		// 정규 표현식을 사용하여 사용자가 입력한 ID의 형식을 검사
+		var regex = /^[a-zA-Z0-9]{8,}$/;
+		if (!regex.test(userId)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#idStatusMessage").css("color", "red").text(
+					"아이디는 영문 알파벳 대소문자와 숫자로만 이루어진 8자 이상 이여야 합니다.");
+			return;
+		}else{
+			$("#idStatusMessage").css("color", "blue").text(
+			"");
+		}
+
+		$.ajax({
+			url : '/createUser/chkID',
+			method : 'post',
+			data : userId, // 사용자 ID를 String 객체 형태로 전달
+			dataType : 'json', // 서버로부터 JSON 형식의 응답을 기대
+			contentType : "application/json; charset=utf-8",
+			success : function(chkIdYN) {
+				if (chkIdYN > 0) {
+					// 아이디가 이미 존재하는 경우 처리
+					$("#idStatusMessage").css("color", "red").text(
+							"이미 사용 중인 아이디입니다.");
+				} else {
+					// 아이디가 사용 가능한 경우 처리
+					$("#idStatusMessage").css("color", "blue").text(
+							"사용 가능한 아이디입니다.");
+				}
+			},
+			error : function(xhr, status, error) {
+				// AJAX 요청 실패 시 처리
+				console.error("AJAX request failed:", error);
+			}
+		});
+	} // func chIdType
+
+	// 닉네임 정규 표현식 및 ajax 
+	function chkNameType(e) {
+		// 사용자가 입력한 아이디
+		var userName = $("#user_name").val();
+
+		// 정규 표현식을 사용하여 사용자가 입력한 ID의 형식을 검사
+		var regex = /^[a-zA-Z0-9가-힣]{2,10}$/;
+		if (!regex.test(userName)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#namechkMessage").css("color", "red").text(
+					"숫자 영문자 한글로 이루어진 2~10자리여야합니다.");
+			return;
+		}
+
+		$.ajax({
+			url : '/createUser/chkNmae',
+			method : 'post',
+			data : userName, // 사용자 ID를 String 객체 형태로 전달
+			dataType : 'json', // 서버로부터 JSON 형식의 응답을 기대
+			contentType : "application/json; charset=utf-8",
+			success : function(chkNameYN) {
+				if (chkNameYN > 0) {
+					// 아이디가 이미 존재하는 경우 처리
+					$("#namechkMessage").css("color", "red").text(
+							"이미 사용 중인 닉네임 입니다.");
+				} else {
+					// 아이디가 사용 가능한 경우 처리
+					$("#namechkMessage").css("color", "blue").text(
+							"사용 가능한 닉네임 입니다.");
+				}
+			},
+			error : function(chkNameYN) {
+				// AJAX 요청 실패 시 처리
+				console.error("AJAX request failed:", error);
+			}
+		});
+	}
+
+	// email 정규표현식
+	function regEmailType(e) {
+		// 사용자가 입력한 이메일
+		var userEmail = $("#user_email").val();
+
+		// 정규 표현식을 사용하여 사용자가 입력한 ID의 형식을 검사
+		var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		if (!regex.test(userEmail)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#emailMessage").css("color", "red").text("형식의 맞지 않는 이메일 양식입니다.");
+		} else {
+			$("#emailMessage").css("color", "red").text("");
+		}
+		return;
+	}
+
+	// 버튼으로 submit 하는 용도
+	function regUser() {
+		var selectedSkills = $('#skill_id').val();
+		var sendData = {
+			user_id : $("#user_id").val(),
+			local_code : $("#local_code").val(),
+			user_name : $("#user_name").val(),
+			user_pw : $("#user_pw").val(),
+			user_email : $("#user_email").val(),
+			skill_id : selectedSkills,
+			github : $("#github").val()
+		};
+
+		$.ajax({
+			url : '/createUser/save',
+			method : 'post',
+			data : JSON.stringify(sendData),
+			dataType : 'json',
+			contentType : "application/json; charset=utf-8",
+			success : function(data, status, xhr) {
+				//성공이면  data가 true[boolean]으로 들어옴
+				if (data) { //이전소스 if(data == "true")
+					alert("가입이 완료 되었습니다");
+					setTimeout(function() {
+						window.location.href = "/loginView";
+					}, 1000);
+				}
+			},
+			error : function(data, status, err) {
+			}
+		});
+	}
+
+	// javascript 비밀번호 확인
+	function pwChk(e) {
+		var userPw = $("#user_pw").val();
+		var chkPw = $("#user_chkpw").val(); // 확인 비밀번호도 가져오기
+
+		var regexPw = /^(?=.*[0-9])(?=.*[a-z])(?=.*[$@!%*#?&])[a-z0-9$@!%*#?&]{8,}$/;
+
+		if (!regexPw.test(userPw)) {
+			// 올바른 형식이 아닌 경우 처리
+			$("#pwConfirm").css("color", "red").text(
+					"영문자, 숫자, 특수 기호가 각 하나씩 포함되어야 합니다.");
+		} else if (userPw !== chkPw) {
+			// 비밀번호가 일치하지 않는 경우 처리
+			$("#pwConfirm").css("color", "red").text("비밀번호가 일치하지 않습니다.");
+		} else {
+			// 비밀번호가 올바르고 일치하는 경우 처리
+			$("#pwConfirm").css("color", "blue").text("비밀번호가 일치합니다.");
+		}
+	}
+
+	// 셀렉트 박스2 스킬리스트 
+	$(document).ready(function() {
+		$("#skill_id").select2();
+	});
+</script>
+<title>회원 가입</title>
+</head>
+
+<body>
+	<th:block th:replace="fragments/header::headerFragment"></th:block>
+	<div class="h-full flex items-center justify-center">
+		<div
+			class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+			<form class="space-y-6">
+				<h5 class="text-xl font-medium text-gray-900 dark:text-white">회원가입</h5>
+				<div>
+					<label for="id"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ID</label>
+					<input type="text" name="user_id" id="user_id"
+						onkeyup="chIdType(event)"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+						placeholder="ID를 입력하세요" required /> <label id="label_id"></label>
+					<label id="idStatusMessage"></label>
+				</div>
+
+				<div class="flex">
+					<div class="w-1/2">
+						<label for="password1"
+							class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">비밀번호</label>
+						<input type="password" name="user_pw" id="user_pw"
+							placeholder="••••••••" onkeyup="pwChk(event)"
+							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+							required />
+
+					</div>
+					<div class="w-1/2 pl-2">
+						<label for="password2"
+							class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">비밀번호
+							확인</label> <input type="password" name="user_chkpw" id="user_chkpw"
+							placeholder="••••••••" onkeyup="pwChk(event)"
+							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+							required />
+					</div>
+
+				</div>
+				<label id="pwConfirm"></label>
+				<div>
+					<label for="nickName"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">닉네임</label>
+					<input type="text" name="user_name" id="user_name"
+						onkeyup="chkNameType(event)"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+						placeholder="닉네임을 입력하세요" required /> <label id="namechkMessage"></label>
+				</div>
+
+
+				<div class="mb-6">
+					<label for="email"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">이메일</label>
+					<input type="email" id="user_email" name="user_email"
+						class="bg-gray-50 border border-gray-300 text-gray-900 
+						text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
+						block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 
+						dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 
+						dark:focus:border-blue-500"
+						onkeyup="regEmailType(event)" placeholder="이메일을 입력 하세요" required />
+					<label id="emailMessage"></label>
+				</div>
+				<div class="mb-6">
+					<label for="gitId"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Git
+						Hub</label> <input type="text" id="github" name="github"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						placeholder="Git Hub 아이디를 입력 하세요" />
+				</div>
+				<div>
+					<label for="local"
+						class="block mb-2 text-sm f
+                ont-medium text-gray-900 dark:text-white">지역</label>
+
+					<select name="local_code" id="local_code"
+						class="bg-gray-50 border border-gray-300 text-gray-900 
+							text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
+							block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 
+							dark:placeholder-gray-400 dark:text-white">
+
+						<th:block th:each="item : ${regions}">
+							<option th:value="${item.local_code}" th:text="${item.local}">강북구</option>
+						</th:block>
+					</select>
+				</div>
+
+				<div>
+					<label for="technicalStack"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">기술스택</label>
+
+
+
+
+
+					<select id="skill_id" name="skill_id" multiple="multiple"
+						class="bg-gray-50 border border-gray-300 text-gray-900 
+							text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
+							block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 
+							dark:placeholder-gray-400 dark:text-white">
+						<th:block th:each="item : ${skills}">
+							<option th:value="${item.skill_id}" th:text="${item.skill_name}">1</option>
+						</th:block>
+					</select>
+
+				</div>
+
+
+
+
+
+
+				<button type="button" onclick="regUser()"
+					class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+
+					확인</button>
+
+			</form>
+		</div>
+	</div>
+	<!-- 푸터 -->
+	<th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+</body>
+
+</html>

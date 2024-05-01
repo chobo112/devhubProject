@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>사이드 프로젝트 제목</title>
+
+   <!--아이콘용-->
+   <script type="text/javascript" src="../../static/js/jquery-3.7.1.min.js" th:src="@{js/jquery-3.7.1.min.js}"></script>
+
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+   <th:block th:replace="~{fragments/configure::configure}"></th:block>
+
+   <style>
+      body {
+         font-family: 'Noto Sans KR', sans-serif;
+         background-color: #f9fafb;
+      }
+   </style>
+
+</head>
+
+<script>
+
+   //댓글 저장
+   function replyBtn(boardId) {
+      // 댓글 내용을 가져온 후 앞뒤 공백을 제거
+      var cmt_content = $("#cmt_content").val().trim();
+
+      // 댓글 내용이 비어 있으면 alert으로 아래 내용 뿌려줌
+      if (cmt_content === '') {
+         alert('댓글 내용을 입력해주세요.');
+         return;
+      }
+      var sendData = {
+         board_id: boardId,
+         cmt_content: $("#cmt_content").val()
+      };
+
+      $.ajax({
+         url: '/cardDetailForm_reply_view',
+         method: 'post',
+         data: JSON.stringify(sendData),
+         dataType: 'html', // 서버에서 HTML을 반환하기 때문에 dataType을 html로 변경
+         contentType: "application/json; charset=utf-8",
+         success: function (data, status, xhr) {
+            $("#replaceWithCommentList").html(data); // 받은 HTML로 댓글 목록을 업데이트
+            $("#cmt_content").val(''); // 댓글 입력창 비우기
+         },
+         error: function (data, status, err) {
+            console.error(err);
+         }
+      });
+   }
+
+   // 댓글 삭제
+   function delfunc(element, event) {
+      // element 를 사용하면 자꾸 화면이 올라가는 현상이 발생
+      // 기본 동작 막는 작업함
+      event.preventDefault();
+
+
+      // 사용자에게 확인 메시지 표시
+      var confirmDelete = confirm('댓글을 삭제하시겠습니까?');
+
+      // 사용자가 확인을 클릭한 경우에만 삭제 진행
+      if (confirmDelete) {
+         var cmtId = $(element).next('input[type="hidden"]').val(); // 클릭된 요소의 값을 가져옴
+
+         var sendData = {
+            cmt_id: cmtId,
+            board_id: $("#board_id").val(),
+            cmt_content: $("#cmt_content").val()
+            // sendData 객체에 cmt_id 속성으로 추가
+         };
+
+         $.ajax({
+            url: '/replydelete',
+            method: 'post',
+            data: JSON.stringify(sendData),
+            dataType: 'html', // 서버에서 HTML을 반환하기 때문에 dataType을 html로 변경
+            contentType: 'application/json; charset=utf-8',
+            success: function (data, status, xhr) {
+               $("#replaceWithCommentList").html(data); // 받은 HTML로 댓글 목록을 업데이트
+            },
+            error: function (data, status, err) {
+               console.error(err);
+            }
+         });
+      }
+   }
+
+   // 페이징 작업 ajax
+   function changePage(currentPage) {
+      $.ajax({
+         url: '/loadComments',
+         data: { board_id: $('#board_id').val(), currentPage },
+         method: 'GET',
+         success: function (response) {
+            $("#replaceWithCommentList").replaceWith(response);
+         }
+      })
+   }
+
+   // 이전 버튼 누르면 전페이지로 
+   function goBack() {
+      window.history.back();
+   }
+
+
+</script>
+
+
+<body>
+   <th:block th:replace="~{fragments/header::headerFragment}"></th:block>
+
+   <section class="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
+   
+      <div class="max-w-4xl mx-auto p-5 my-2">
+         <div class="bg-white p-4">
+
+            <h1 class="text-3xl font-bold mt-2">[프로젝트 제목]
+               [[${board_detail.board_title}]]</h1>
+
+
+            <p class="text-sm text-gray-800 text-end font-bold mt-2">
+               [[${#dates.format(board_detail.board_wdate, 'yyyy년 MM월 dd일')}]]</p>
+            <hr class="my-2" />
+
+            <!--       <div class="my-4 max-w-4xl mx-auto flex justify-between">
+            별점
+            <ul th:if="${board_detail.board_type} == 1"
+               class="flex items-center" style="margin-right: 20px;">
+               <li><i class="fas fa-star text-yellow-300"></i> <span
+                  th:if="${board_detail.avg_score == null}">평가 기록이 없습니다</span> <span
+                  th:unless="${board_detail.avg_score == null}">
+                     [[${board_detail.avg_score}]]</span></li>
+            </ul>
+         </div> -->
+
+            <div>
+               <!-- 별점을 표시할 요소 -->
+               <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                     <!--    별점을 제외한 닉네임과 작성일을 감싸는 flex 컨테이너 -->
+                     <svg class="ml-2 w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z"
+                           clip-rule="evenodd" />
+                     </svg>
+
+                     <p class="text-sm text-gray-800 text-end font-bold ml-2">
+                        [[${board_detail.user_name}]]</p>
+
+                  </div>
+
+
+                  <ul th:if="${board_detail.board_type} == 1" class="flex items-center ml-2">
+                     <li><i class="fas fa-star text-yellow-300"></i> <span th:if="${board_detail.avg_score == null}">평가
+                           기록이 없습니다</span> <span th:unless="${board_detail.avg_score == null}">
+                           [[${board_detail.avg_score}]]</span></li>
+                  </ul>
+
+
+
+                  <div class="flex items-center ml-auto">
+                     <!-- 조회수를 오른쪽에 배치 -->
+                     <i class="fas fa-eye text-sm text-gray-500 font-bold mr-2"></i>
+                     <p class="text-sm text-gray-800 font-bold">조회수 :
+                        [[${board_detail.board_view}]]</p>
+                  </div>
+               </div>
+            </div>
+
+
+
+            <div class="bg-white p-4 rounded-lg">
+               <div class="grid grid-cols-2 gap-x-5">
+                  <!-- 1번째 줄 -->
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+
+                     <p class="text-base font-bold ml-2 mt-3 mr-8">모집유형</p>
+                     <span th:switch="${board_detail.board_type}" class="ml-4 mt-3">
+                        <span th:case="1" class="text-base">멘티 모집</span> <span th:case="2" class="text-base">멘토 & 멤버
+                           모집</span> <span th:case="3" class="text-base">멤버 모집</span>
+                     </span>
+                  </div>
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">진행방식</p>
+                     <p class="text-base ml-4 mt-3">[[${board_detail.pr_type
+                        == 0 ? '온라인' : (board_detail.pr_type == 1? '오프라인' : '온/오프라인')}]]</p>
+                  </div>
+
+                  <!-- 2번째 줄 -->
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">카카오링크</p>
+                     <p class="text-base ml-4 mt-3">[[${board_detail.kakaolink}]]</p>
+                  </div>
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">카카오 비밀번호</p>
+
+                     <th:block th:each="applyer : ${AcceptedApply}">
+                        <p class="text-base ml-4 mt-3" th:unless="${session.userId} == ${applyer.user_id} ">
+                           [[${board_detail.kakaopw}]]</p>
+                     </th:block>
+
+                  </div>
+
+                  <!-- 3번째 줄 -->
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">프로젝트 시작일</p>
+                     <p class="text-base ml-4 mt-3">[[${#dates.format(board_detail.pr_sdate,
+                        'yyyy년 MM월 dd일')}]]</p>
+                  </div>
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">프로젝트 종료일</p>
+                     <p class="text-base ml-4 mt-3">[[${#dates.format(board_detail.pr_edate,
+                        'yyyy년 MM월 dd일')}]]</p>
+                  </div>
+
+
+
+                  <!-- 4번째 줄 -->
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">모집 마감일자</p>
+                     <p class="text-base ml-4 mt-3">[[${#dates.format(board_detail.board_edate,
+                        'yyyy년 MM월 dd일')}]]</p>
+                  </div>
+
+
+                  <!-- 5번째줄 -->
+                  <div class="flex items-center" th:if="${board_detail.local != null}">
+                 		 <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+	                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+	                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3">지역</p>
+                     <p class="text-base ml-4 mt-3">[[${board_detail.local}]]</p>
+                  </div>
+                  <div class="flex items-center">
+                     <svg class="w-6 h-6 text-gray-800 mt-3 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                           d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z"
+                           clip-rule="evenodd" />
+                     </svg>
+                     <p class="text-base font-bold ml-2 mt-3" th:if="${board_detail.board_type} != 3">금액</p>
+                     <p class="text-base ml-4 mt-3" th:if="${board_detail.board_type} != 3">[[${board_detail.pr_price}]]
+                        원</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <hr class="my-4" />
+
+         <div class="max-w-4xl ml-4">
+
+            <div style="word-wrap: break-word;">
+               <p class="text-base font-bold mt-4 mb-4">프로젝트 내용</p>
+               <p class="text-base mt-2 mb-8">[[${board_detail.board_content}]]</p>
+            </div>
+         </div>
+
+         <!-- 그룹별 인원 및 사진 -->
+         <div th:each="group : ${groups}">
+            <div class="my-4 max-w-4xl mx-auto">
+               <div class="border-b-2 border-gray-200 pb-4 mb-8">
+                  <h2 class="text-lg font-semibold">
+                     <span th:if="${group.group_id == 1 }">멘토 모집</span> <span th:unless="${group.group_id == 1 }">멘티
+                        모집</span>
+                  </h2>
+               </div>
+
+               <!-- 그림 이쁘게 나오는거 -->
+               <div class="flex items-center w-auto">
+                  <div class="flex items-center justify-between w-full flex-wrap mb-4">
+                     <div class="flex flex-wrap items-center gap-2">
+                        <!-- flex-wrap 추가 -->
+                        <div th:each="skill,iterStat : ${group.skills}" th:if="${iterStat.index} &lt; 4"
+                           class="mr-2 inline-flex flex-row items-center gap-2 
+                                     h-8 py-1 pl-1 pr-3 hover:bg-surface-200 dark:hover:bg-surfacedark-200 focus:bg-surface-400 dark:focus:bg-surfacedark-400 
+                                     border border-gray-500 dark:border-gray-200 rounded-[30px] text-sm tracking-[.00714em]">
+                           <img th:src="${skill.skill_img}" alt="Skill Image" class="h-full w-full"> <span
+                              th:text="${skill.skill_name}" class="text-sm whitespace-nowrap"></span>
+                        </div>
+                     </div>
+
+                     <div class="flex items-center">
+                        <span class="text-gray-500 text-sm font-bold mr-2">모집인원
+                           : <span th:text="${group.group_num}"></span> 명
+                        </span>
+
+                        <form id="applyForm" action="/apply" method="POST">
+                           <input type="hidden" id="ismentor" name="ismentor" th:value="${group.ismentor}"> <input
+                              type="hidden" id="board_id" name="board_id" th:value="${group.board_id}">
+                           <input type="hidden" id="group_id" name="group_id" th:value="${group.group_id}">
+                           <button th:unless="${session.userId} == ${board_detail.user_id}" value=0 name="apply"
+                              type="submit"
+                              class="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 ">신청</button>
+                        </form>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+
+      <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+      <!-- 댓글 섹션 -->
+
+      <div class="max-w-4xl mx-auto bg-white p-5 my-2">
+         <div class="my-4 max-w-4xl mx-auto">
+            <h1 class="text-lg font-semibold mb-4">댓글</h1>
+
+            <!-- 댓글 입력 폼 -->
+            <form th:if="${session.userId != null}" class="mb-4" action="#">
+               <textarea id="cmt_content" name="cmt_content"
+                  class="w-full bg-gray-100 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                  rows="4" placeholder="댓글을 입력하세요..."></textarea>
+               <button type="button" th:onclick="replyBtn([[${board_detail.board_id}]])"
+                  class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">등록</button>
+            </form>
+
+            <!-- 댓글 목록 -->
+            <div class="space-y-4" id="replaceWithCommentList">
+               <!-- th:each로 화면에 뿌려주기위한 밑작업 -->
+               <div th:each="comment:${commentList}" class="bg-gray-100 rounded-md p-4">
+                  <div class="flex justify-between items-center">
+                     <!-- 가지고있는 리스트의 해당 하는 댓글을 뿌려줌 -->
+                     <p th:text="${comment.cmt_content}" class="text-gray-700">댓글
+                        내용입니다.</p>
+                     <div class="flex">
+                        <!-- 해당 아이디면 삭제 a태그가 보임 -->
+                        <a th:if="${session.userId == comment.user_id}" href="#" onclick="delfunc(this,event)"
+                           onmouseover="this.style.color='red'" onmouseout="this.style.color='#808080'"
+                           class="text-gray-500">
+                           삭제</a>
+                        <!-- 삭제 하기위해서는 클릭한 cmt_id를 알아야해서 값을 숨겨서 넣어줌 -->
+                        <input type="hidden" th:value="${comment.cmt_id}">
+                     </div>
+                  </div>
+                  <div class="flex justify-between items-center mt-2">
+                     <!-- comment 에는 없는 user_name을 조인해서 넣어줌 -->
+                     <p th:text="${comment.user_name}" class="text-sm text-gray-500">작성자:
+                        사용자1</p>
+                     <!-- 기존 날짜 데이터를 해당 양식에 맞게 포맷함 -->
+                     <p th:text="${#calendars.format(comment.cmt_date, 'yyyy-MM-dd HH:mm:ss')}"
+                        class="text-sm text-gray-500">작성일: 2024-02-24</p>
+                  </div>
+               </div>
+
+               <!-- 페이지 버튼 -->
+               <div class="flex justify-center my-4" th:if="${commentCount > 0}">
+                  <!-- pageNumber는 첫 page 와 끝 page 를 설정해줌 -->
+                  <th:block th:each="pageNumber : ${#numbers.sequence(replyPaging.startPage, replyPaging.endPage)}">
+                     <!--시퀸스로 page 의 number 를 규격에 맞에 생성 , on click 할 때 page 의 정보를 넘김 -->
+                     <button type="button"
+                        class=" text-black px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600 mr-2"
+                        th:text="${pageNumber}" th:onclick="changePage([[${pageNumber}]])"></button>
+                  </th:block>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="text-center">
+         <div class="inline-block">
+            <button type="button" style="background-color: #59c3f3;" onclick="goBack()"
+               class="mt-2 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600 mr-2">이전</button>
+         </div>
+
+
+
+
+
+      </div>
+
+   </section>
+   <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+
+
+   <!-- 푸터 -->
+   <th:block th:replace="~{fragments/footer::footerFragment}"></th:block>
+
+</body>
+
+</html>

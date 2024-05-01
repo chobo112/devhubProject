@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.team2.SA_GroupMapper">
+
+	<select id="saFindGroup" parameterType="Apply" resultType="Group">
+		select *
+		from group_tbl
+		where board_id = #{board_id}
+		and group_id = #{group_id}
+	</select>
+
+	<select id="saGroupList" parameterType="String" resultType="Group">
+		
+		SELECT *
+		FROM group_tbl g
+		WHERE g.board_id = #{board_id}
+		
+	</select>
+	
+	<select id="saApplyUsers" parameterType="Group" resultType="User">
+		
+		SELECT u.*, a.ap_accept
+		FROM apply_tbl a, user_tbl u
+        WHERE a.user_id=u.user_id
+		AND a.board_id = #{board_id}
+		AND a.group_id = #{group_id}
+		
+	</select>
+	
+	<select id="saUserSkills" parameterType="User" resultType="Skill">
+	
+		SELECT s.*
+		FROM user_skill_tbl us, skill_tbl s
+		WHERE us.skill_id = s.skill_id
+		AND user_id = #{user_id}
+		
+	</select>
+	
+</mapper>
